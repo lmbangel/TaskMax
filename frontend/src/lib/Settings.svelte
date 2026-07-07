@@ -1,0 +1,305 @@
+<script>
+  import { createEventDispatcher } from 'svelte'
+  import { TestConnection } from '../../wailsjs/go/main/App'
+
+  export let open = false
+  export let config = null
+
+  const dispatch = createEventDispatcher()
+
+  let draft = null
+  let testState = 'idle' // idle | testing | ok | fail
+  let testMsg = ''
+
+  // Deep-ish clone whenever the panel opens so edits are cancellable.
+  $: if (open && config && !draft) {
+    draft = {
+      database: { ...config.database },
+      pomodoro: { ...config.pomodoro },
+      app: { ...config.app }
+    }
+    testState = 'idle'
+    testMsg = ''
+  }
+
+  function close() {
+    draft = null
+    dispatch('close')
+  }
+
+  function save() {
+    dispatch('save', draft)
+    draft = null
+  }
+
+  async function testConnection() {
+    testState = 'testing'
+    testMsg = ''
+    try {
+      await TestConnection(draft.database.type, draft.database.dsn)
+      testState = 'ok'
+      testMsg = 'Connection successful'
+    } catch (e) {
+      testState = 'fail'
+      testMsg = (e && e.message) || String(e)
+    }
+  }
+</script>
+
+{#if open && draft}
+  <div class="scrim" on:click={close} role="presentation"></div>
+  <aside class="panel">
+    <header>
+      <h2>⚙️ Settings</h2>
+      <button class="btn btn-ghost close" on:click={close}>✕</button>
+    </header>
+
+    <div class="fields">
+      <!-- Database -->
+      <section>
+        <h3>Database</h3>
+        <div class="row">
+          <div>
+            <label for="db-type">Type</label>
+            <select id="db-type" bind:value={draft.database.type} on:change={() => (testState = 'idle')}>
+              <option value="sqlite">SQLite (local)</option>
+              <option value="postgres">PostgreSQL</option>
+              <option value="mysql">MySQL</option>
+            </select>
+          </div>
+          <div>
+            <label for="db-dsn">
+              {draft.database.type === 'sqlite' ? 'File path' : 'Connection string (DSN)'}
+            </label>
+            <input
+              id="db-dsn"
+              bind:value={draft.database.dsn}
+              on:input={() => (testState = 'idle')}
+              placeholder={draft.database.type === 'sqlite'
+                ? 'tasks.db'
+                : 'host=… user=… dbname=…'}
+            />
+          </div>
+        </div>
+        <div class="test-row">
+          <button class="btn" on:click={testConnection} disabled={testState === 'testing'}>
+            {testState === 'testing' ? 'Testing…' : 'Test connection'}
+          </button>
+          {#if testState === 'ok'}
+            <span class="test ok">✓ {testMsg}</span>
+          {:else if testState === 'fail'}
+            <span class="test fail">✕ {testMsg}</span>
+          {/if}
+        </div>
+        <p class="note">Changing the database driver takes effect after an app restart.</p>
+      </section>
+
+      <!-- Pomodoro -->
+      <section>
+        <h3>Pomodoro</h3>
+        <label class="slider">
+          <span class="slabel">Work duration <b>{draft.pomodoro.work_duration} min</b></span>
+          <input type="range" min="5" max="60" step="5" bind:value={draft.pomodoro.work_duration} />
+        </label>
+        <label class="slider">
+          <span class="slabel">Short break <b>{draft.pomodoro.short_break} min</b></span>
+          <input type="range" min="1" max="30" step="1" bind:value={draft.pomodoro.short_break} />
+        </label>
+        <label class="slider">
+          <span class="slabel">Long break <b>{draft.pomodoro.long_break} min</b></span>
+          <input type="range" min="5" max="45" step="5" bind:value={draft.pomodoro.long_break} />
+        </label>
+        <label class="slider">
+          <span class="slabel">Sessions before long break <b>{draft.pomodoro.sessions_before_long}</b></span>
+          <input type="range" min="2" max="8" step="1" bind:value={draft.pomodoro.sessions_before_long} />
+        </label>
+      </section>
+
+      <!-- Appearance -->
+      <section>
+        <h3>Appearance</h3>
+        <span class="fieldlabel">Theme</span>
+        <div class="themes">
+          {#each ['cosy', 'dark', 'light'] as t}
+            <button
+              class="theme-btn"
+              class:active={draft.app.theme === t}
+              on:click={() => (draft.app.theme = t)}
+            >
+              {t}
+            </button>
+          {/each}
+        </div>
+
+        <label class="switch">
+          <input type="checkbox" bind:checked={draft.app.minimize_to_tray} />
+          <span>Hide window on close (minimize to tray)</span>
+        </label>
+      </section>
+    </div>
+
+    <footer>
+      <button class="btn btn-ghost" on:click={close}>Cancel</button>
+      <button class="btn btn-accent" on:click={save}>Save settings</button>
+    </footer>
+  </aside>
+{/if}
+
+<style>
+  .scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 40;
+    animation: fade 0.15s ease;
+  }
+  .panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: min(460px, 94vw);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+    z-index: 41;
+    display: flex;
+    flex-direction: column;
+    animation: slide 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem 0.75rem;
+  }
+  header h2 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .close {
+    padding: 0.35rem 0.6rem;
+  }
+  .fields {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  section h3 {
+    margin: 0 0 0.75rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+  }
+  .test-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .test {
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .test.ok {
+    color: var(--success);
+  }
+  .test.fail {
+    color: var(--danger);
+  }
+  .note {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    margin: 0.6rem 0 0;
+  }
+  .slider {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 0.9rem;
+  }
+  .slabel {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .slabel b {
+    color: var(--accent);
+  }
+  .fieldlabel {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+  }
+  input[type='range'] {
+    width: 100%;
+    accent-color: var(--accent);
+    padding: 0;
+    background: transparent;
+  }
+  .themes {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .theme-btn {
+    flex: 1;
+    padding: 0.55rem;
+    border-radius: var(--radius-input);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    text-transform: capitalize;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .theme-btn.active {
+    background: var(--accent);
+    color: #1e1e2e;
+  }
+  .switch {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-transform: none;
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .switch input {
+    width: auto;
+    accent-color: var(--accent);
+  }
+  footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding: 1rem 1.5rem 1.25rem;
+    border-top: 1px solid var(--surface-2);
+  }
+  @keyframes slide {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+</style>
