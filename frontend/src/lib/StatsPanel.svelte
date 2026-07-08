@@ -1,10 +1,12 @@
 <script>
+  import { mascot } from '../stores/appearance.js'
+
   export let stats = { sessions_completed: 0, work_sessions: 0, total_focus_minutes: 0 }
   export let sessions = [] // sessions for the selected task
   export let task = null
 
+  // Work sessions use the accent mascot as their icon.
   const TYPE_LABEL = {
-    work: '🦆 Work',
     short_break: '☕ Short break',
     long_break: '🌿 Long break'
   }
@@ -30,7 +32,7 @@
   <div class="grid">
     <div class="stat card">
       <div class="value">{stats.work_sessions}</div>
-      <div class="label">🦆 Sessions</div>
+      <div class="label">{$mascot} Sessions</div>
     </div>
     <div class="stat card">
       <div class="value">{focusText(stats.total_focus_minutes)}</div>
@@ -51,7 +53,7 @@
       {/if}
       {#each sessions as s}
         <div class="row card">
-          <span class="type">{TYPE_LABEL[s.type] || s.type}</span>
+          <span class="type">{s.type === 'work' ? `${$mascot} Work` : TYPE_LABEL[s.type] || s.type}</span>
           <span class="dur">{s.duration}m</span>
           <span class="when">{timeOf(s.started_at)}</span>
           <span class="done">{s.completed ? '✓' : '⋯'}</span>

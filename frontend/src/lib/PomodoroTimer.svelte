@@ -1,14 +1,16 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { timer } from '../stores/timer.js'
+  import { mascot } from '../stores/appearance.js'
   import { StartPomodoro, StopPomodoro } from '../../wailsjs/go/main/App'
   import { EventsOn, EventsOff } from '../../wailsjs/runtime/runtime'
 
   export let task = null // currently selected task (or null)
   export let config = null // app config, for session durations
 
+  // Work sessions use the accent mascot as their icon (see accents.js).
   const MODES = {
-    work: { label: 'Work', icon: '🦆', color: 'var(--accent)' },
+    work: { label: 'Work', icon: null, color: 'var(--accent)' },
     short_break: { label: 'Short Break', icon: '☕', color: 'var(--info)' },
     long_break: { label: 'Long Break', icon: '🌿', color: 'var(--success)' }
   }
@@ -78,7 +80,7 @@
 
 <div class="timer card">
   <div class="mode" style="--mode-color: {mode.color}">
-    <span class="icon">{mode.icon}</span>
+    <span class="icon">{mode.icon || $mascot}</span>
     <span class="label">{mode.label}</span>
   </div>
 

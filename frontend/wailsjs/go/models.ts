@@ -2,6 +2,7 @@ export namespace config {
 	
 	export class AppConfig {
 	    theme: string;
+	    accent: string;
 	    minimize_to_tray: boolean;
 	
 	    static createFrom(source: any = {}) {
@@ -11,6 +12,7 @@ export namespace config {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.theme = source["theme"];
+	        this.accent = source["accent"];
 	        this.minimize_to_tray = source["minimize_to_tray"];
 	    }
 	}

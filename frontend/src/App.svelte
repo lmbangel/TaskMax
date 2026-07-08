@@ -2,6 +2,8 @@
   import { onMount, onDestroy } from 'svelte'
   import { tasks } from './stores/tasks.js'
   import { timer } from './stores/timer.js'
+  import { accent, mascot } from './stores/appearance.js'
+  import { DEFAULT_ACCENT } from './lib/accents.js'
   import TaskList from './lib/TaskList.svelte'
   import TaskForm from './lib/TaskForm.svelte'
   import PomodoroTimer from './lib/PomodoroTimer.svelte'
@@ -54,8 +56,10 @@
     selectedId = null
   }
 
-  async function applyTheme(theme) {
+  function applyAppearance(theme, accentKey) {
     document.documentElement.dataset.theme = theme || 'cosy'
+    document.documentElement.dataset.accent = accentKey || DEFAULT_ACCENT
+    accent.set(accentKey || DEFAULT_ACCENT)
   }
 
   async function loadStats() {
@@ -124,7 +128,7 @@
   async function saveSettings(e) {
     config = e.detail
     await SaveConfig(config)
-    applyTheme(config.app.theme)
+    applyAppearance(config.app.theme, config.app.accent)
     settingsOpen = false
     loadStats()
   }
@@ -140,9 +144,9 @@
   onMount(async () => {
     try {
       config = await GetConfig()
-      applyTheme(config.app.theme)
+      applyAppearance(config.app.theme, config.app.accent)
     } catch (e) {
-      applyTheme('cosy')
+      applyAppearance('cosy', DEFAULT_ACCENT)
     }
     await tasks.refresh()
     await loadStats()
@@ -167,7 +171,7 @@
 <div class="widget">
   <!-- Custom titlebar: the window is frameless, so this is the drag handle. -->
   <header class="titlebar" style="--wails-draggable: drag">
-    <span class="logo">🦆</span>
+    <span class="logo">{$mascot}</span>
     <span class="name">TaskMax</span>
     <div class="win-controls" style="--wails-draggable: no-drag">
       <button class="win-btn" title="Settings" on:click={() => (settingsOpen = true)}>⚙</button>
@@ -221,7 +225,7 @@
             {/if}
           </div>
           <div class="detail-actions">
-            <button class="btn btn-accent" on:click={() => (tab = 'focus')}>🦆 Focus</button>
+            <button class="btn btn-accent" on:click={() => (tab = 'focus')}>{$mascot} Focus</button>
             <button class="btn btn-ghost" on:click={editTask}>✎ Edit</button>
             <button class="btn btn-ghost danger" on:click={deleteSelected}>🗑</button>
           </div>

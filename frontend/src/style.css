@@ -1,8 +1,11 @@
 /* ---------- Theme tokens ----------
-   Neutral surfaces + a single duck-yellow amber accent across all themes.
-   --accent      : fills (buttons, timer ring, active states)
-   --accent-ink  : the accent as *text*, darkened where needed for contrast
-   --on-accent   : text placed on top of an accent fill                     */
+   Two independent axes, both set on <html>:
+     data-theme  : surface mode (cosy | dark | light) — surfaces, text, shadows
+     data-accent : brand accent + mascot (duck | tomato | orange)
+   Accent tokens:
+     --accent      : fills (buttons, timer ring, active states)
+     --accent-ink  : the accent as *text*, darkened on light surfaces
+     --on-accent   : text placed on top of an accent fill                   */
 :root,
 :root[data-theme='cosy'] {
   --bg: #1c1b19;
@@ -12,10 +15,6 @@
   --text: #eceae6;
   --text-muted: #a8a49c;
   --text-faint: #757067;
-  --accent: #f0b429;
-  --accent-ink: #f0b429;
-  --on-accent: #241d0b;
-  --accent-soft: rgba(240, 180, 41, 0.14);
   --success: #8fbc8b;
   --success-soft: rgba(143, 188, 139, 0.14);
   --warning: #dfa05e;
@@ -37,10 +36,6 @@
   --text: #e7e9ec;
   --text-muted: #9aa0a9;
   --text-faint: #63686f;
-  --accent: #f0b429;
-  --accent-ink: #f0b429;
-  --on-accent: #241d0b;
-  --accent-soft: rgba(240, 180, 41, 0.13);
   --success: #86b489;
   --success-soft: rgba(134, 180, 137, 0.14);
   --warning: #dba55f;
@@ -62,10 +57,6 @@
   --text: #2a2c30;
   --text-muted: #6b6f76;
   --text-faint: #9b9fa6;
-  --accent: #f0b429;
-  --accent-ink: #8a6116;
-  --on-accent: #241d0b;
-  --accent-soft: rgba(240, 180, 41, 0.18);
   --success: #3d7a4a;
   --success-soft: rgba(61, 122, 74, 0.13);
   --warning: #a3611b;
@@ -77,6 +68,42 @@
   --shadow-lg: 0 10px 32px rgba(60, 55, 45, 0.16);
   --radius-card: 10px;
   --radius-input: 7px;
+}
+
+/* ---------- Accent palettes ----------
+   Every accent stays muted and flat; --accent-ink is re-darkened per accent
+   for light surfaces so accent-coloured text keeps its contrast.            */
+:root,
+:root[data-accent='duck'] {
+  --accent: #f0b429; /* duck yellow */
+  --accent-ink: #f0b429;
+  --on-accent: #241d0b;
+  --accent-soft: rgba(240, 180, 41, 0.14);
+}
+:root[data-accent='tomato'] {
+  --accent: #b85043; /* brick red, not strawberry */
+  --accent-ink: #d98a80;
+  --on-accent: #ffffff;
+  --accent-soft: rgba(184, 80, 67, 0.15);
+}
+:root[data-accent='orange'] {
+  --accent: #d97f35; /* muted orange */
+  --accent-ink: #e39a5e;
+  --on-accent: #271505;
+  --accent-soft: rgba(217, 127, 53, 0.14);
+}
+
+:root[data-theme='light'][data-accent='duck'] {
+  --accent-ink: #8a6116;
+  --accent-soft: rgba(240, 180, 41, 0.18);
+}
+:root[data-theme='light'][data-accent='tomato'] {
+  --accent-ink: #96382d;
+  --accent-soft: rgba(184, 80, 67, 0.12);
+}
+:root[data-theme='light'][data-accent='orange'] {
+  --accent-ink: #91500f;
+  --accent-soft: rgba(217, 127, 53, 0.13);
 }
 
 /* ---------- Base ---------- */

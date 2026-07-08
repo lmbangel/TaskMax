@@ -22,7 +22,8 @@ type PomodoroConfig struct {
 
 // AppConfig holds general application preferences.
 type AppConfig struct {
-	Theme          string `mapstructure:"theme" json:"theme"` // cosy | dark | light
+	Theme          string `mapstructure:"theme" json:"theme"`   // surface mode: cosy | dark | light
+	Accent         string `mapstructure:"accent" json:"accent"` // accent/mascot: duck | tomato | orange
 	MinimizeToTray bool   `mapstructure:"minimize_to_tray" json:"minimize_to_tray"`
 }
 
@@ -44,6 +45,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("pomodoro.sessions_before_long", 4)
 
 	v.SetDefault("app.theme", "cosy")
+	v.SetDefault("app.accent", "duck")
 	v.SetDefault("app.minimize_to_tray", true)
 }
 
@@ -91,6 +93,7 @@ func Save(path string, cfg *Config) error {
 	v.Set("pomodoro.sessions_before_long", cfg.Pomodoro.SessionsBeforeLong)
 
 	v.Set("app.theme", cfg.App.Theme)
+	v.Set("app.accent", cfg.App.Accent)
 	v.Set("app.minimize_to_tray", cfg.App.MinimizeToTray)
 
 	return v.WriteConfigAs(path)
@@ -119,5 +122,8 @@ func (c *Config) applyFallbacks() {
 	}
 	if c.App.Theme == "" {
 		c.App.Theme = "cosy"
+	}
+	if c.App.Accent == "" {
+		c.App.Accent = "duck"
 	}
 }

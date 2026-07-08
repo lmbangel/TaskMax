@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
+  import { mascot } from '../stores/appearance.js'
 
   export let tasks = []
   export let selectedId = null
@@ -102,7 +103,7 @@
               <span class="chip">#{tag}</span>
             {/each}
             {#if task.pomodoro_count > 0}
-              <span class="poms">🦆 {task.pomodoro_count}</span>
+              <span class="poms">{$mascot} {task.pomodoro_count}</span>
             {/if}
           </div>
         {/if}

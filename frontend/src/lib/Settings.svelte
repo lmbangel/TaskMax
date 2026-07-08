@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte'
   import { TestConnection } from '../../wailsjs/go/main/App'
+  import { ACCENTS, DEFAULT_ACCENT } from './accents.js'
 
   export let open = false
   export let config = null
@@ -16,7 +17,7 @@
     draft = {
       database: { ...config.database },
       pomodoro: { ...config.pomodoro },
-      app: { ...config.app }
+      app: { accent: DEFAULT_ACCENT, ...config.app }
     }
     testState = 'idle'
     testMsg = ''
@@ -118,7 +119,7 @@
       <!-- Appearance -->
       <section>
         <h3>Appearance</h3>
-        <span class="fieldlabel">Theme</span>
+        <span class="fieldlabel">Mode</span>
         <div class="themes">
           {#each ['cosy', 'dark', 'light'] as t}
             <button
@@ -127,6 +128,19 @@
               on:click={() => (draft.app.theme = t)}
             >
               {t}
+            </button>
+          {/each}
+        </div>
+
+        <span class="fieldlabel">Accent</span>
+        <div class="themes">
+          {#each Object.entries(ACCENTS) as [key, a]}
+            <button
+              class="theme-btn"
+              class:active={draft.app.accent === key}
+              on:click={() => (draft.app.accent = key)}
+            >
+              {a.emoji} {a.label}
             </button>
           {/each}
         </div>
