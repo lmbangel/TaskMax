@@ -1,13 +1,11 @@
-database:
-  type: sqlite          # sqlite | postgres | mysql
-  dsn: tasks.db         # file path for sqlite, connection string for others
-
-pomodoro:
-  work_duration: 25     # minutes
-  short_break: 5
-  long_break: 15
-  sessions_before_long: 4
-
 app:
-  theme: cosy           # cosy | dark | light
-  minimize_to_tray: true
+    minimize_to_tray: true
+    theme: dark
+database:
+    dsn: tasks.db
+    type: sqlite
+pomodoro:
+    long_break: 15
+    sessions_before_long: 4
+    short_break: 5
+    work_duration: 25
