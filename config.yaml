@@ -6,11 +6,13 @@ database:
     dsn: tasks.db
     type: sqlite
 pomodoro:
+    daily_goal: 8
     long_break: 15
     sessions_before_long: 4
     short_break: 5
+    sound: true
     work_duration: 25
 window:
     saved: true
-    x: 1500
-    "y": 300
+    x: 1779
+    "y": 393

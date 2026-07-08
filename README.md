@@ -150,7 +150,7 @@ Use the **Test connection** button in Settings to validate a DSN before saving. 
 - [x] Single-instance guard — launching the app again just brings the existing widget back
 - [x] Remember the window position between restarts
 - [x] Auto-set a task to "in progress" when you start focusing on it
-- [ ] Tray icon that matches the chosen accent
+<!--- [ ] Tray icon that matches the chosen accent-->
 - [ ] winget distribution and data export/backup
 
 ---
