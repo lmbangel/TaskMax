@@ -233,7 +233,7 @@
     color: var(--text-muted);
   }
   .slabel b {
-    color: var(--accent);
+    color: var(--accent-ink);
   }
   .fieldlabel {
     display: block;
@@ -264,7 +264,7 @@
   }
   .theme-btn.active {
     background: var(--accent);
-    color: #1e1e2e;
+    color: var(--on-accent);
   }
   .switch {
     display: flex;

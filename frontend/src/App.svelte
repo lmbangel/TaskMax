@@ -21,9 +21,9 @@
   } from '../wailsjs/runtime/runtime'
 
   const TABS = [
-    { key: 'focus', label: 'Focus', icon: '🍅' },
-    { key: 'tasks', label: 'Tasks', icon: '✅' },
-    { key: 'stats', label: 'Stats', icon: '📊' }
+    { key: 'focus', label: 'Focus' },
+    { key: 'tasks', label: 'Tasks' },
+    { key: 'stats', label: 'Stats' }
   ]
 
   const FILTERS = [
@@ -167,7 +167,7 @@
 <div class="widget">
   <!-- Custom titlebar: the window is frameless, so this is the drag handle. -->
   <header class="titlebar" style="--wails-draggable: drag">
-    <span class="logo">🍅</span>
+    <span class="logo">🦆</span>
     <span class="name">TaskMax</span>
     <div class="win-controls" style="--wails-draggable: no-drag">
       <button class="win-btn" title="Settings" on:click={() => (settingsOpen = true)}>⚙</button>
@@ -179,7 +179,7 @@
   <nav class="tabs">
     {#each TABS as t}
       <button class="tab" class:active={tab === t.key} on:click={() => (tab = t.key)}>
-        <span class="tab-icon">{t.icon}</span>{t.label}
+        {t.label}
       </button>
     {/each}
   </nav>
@@ -221,7 +221,7 @@
             {/if}
           </div>
           <div class="detail-actions">
-            <button class="btn btn-accent" on:click={() => (tab = 'focus')}>🍅 Focus</button>
+            <button class="btn btn-accent" on:click={() => (tab = 'focus')}>🦆 Focus</button>
             <button class="btn btn-ghost" on:click={editTask}>✎ Edit</button>
             <button class="btn btn-ghost danger" on:click={deleteSelected}>🗑</button>
           </div>
@@ -293,7 +293,7 @@
   }
   .win-btn.close:hover {
     background: var(--danger);
-    color: #1e1e2e;
+    color: #fff;
   }
 
   /* ----- Tabs ----- */
@@ -317,12 +317,9 @@
     font-weight: 700;
     box-shadow: var(--shadow);
   }
-  .tab-icon {
-    font-size: 0.85rem;
-  }
   .tab.active {
     background: var(--accent-soft);
-    color: var(--accent);
+    color: var(--accent-ink);
   }
 
   /* ----- Content ----- */
@@ -386,7 +383,7 @@
   }
   .filter.active {
     background: var(--accent-soft);
-    color: var(--accent);
+    color: var(--accent-ink);
   }
 
   /* ----- Selected task detail (Tasks tab) ----- */

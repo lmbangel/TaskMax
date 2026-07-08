@@ -8,7 +8,7 @@
   export let config = null // app config, for session durations
 
   const MODES = {
-    work: { label: 'Work', icon: '🍅', color: 'var(--accent)' },
+    work: { label: 'Work', icon: '🦆', color: 'var(--accent)' },
     short_break: { label: 'Short Break', icon: '☕', color: 'var(--info)' },
     long_break: { label: 'Long Break', icon: '🌿', color: 'var(--success)' }
   }
@@ -163,7 +163,6 @@
   }
   .progress {
     transition: stroke-dashoffset 0.95s linear, stroke 0.3s ease;
-    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--mode-color) 45%, transparent));
   }
 
   .readout {

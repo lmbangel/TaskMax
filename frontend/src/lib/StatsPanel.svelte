@@ -4,7 +4,7 @@
   export let task = null
 
   const TYPE_LABEL = {
-    work: '🍅 Work',
+    work: '🦆 Work',
     short_break: '☕ Short break',
     long_break: '🌿 Long break'
   }
@@ -30,7 +30,7 @@
   <div class="grid">
     <div class="stat card">
       <div class="value">{stats.work_sessions}</div>
-      <div class="label">🍅 Sessions</div>
+      <div class="label">🦆 Sessions</div>
     </div>
     <div class="stat card">
       <div class="value">{focusText(stats.total_focus_minutes)}</div>
@@ -99,7 +99,7 @@
   .value {
     font-size: 1.9rem;
     font-weight: 800;
-    color: var(--accent);
+    color: var(--accent-ink);
     line-height: 1;
   }
   .value.small {

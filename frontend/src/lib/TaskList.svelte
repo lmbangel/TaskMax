@@ -102,7 +102,7 @@
               <span class="chip">#{tag}</span>
             {/each}
             {#if task.pomodoro_count > 0}
-              <span class="poms">🍅 {task.pomodoro_count}</span>
+              <span class="poms">🦆 {task.pomodoro_count}</span>
             {/if}
           </div>
         {/if}

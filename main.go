@@ -49,7 +49,7 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		BackgroundColour:  &options.RGBA{R: 30, G: 30, B: 46, A: 1},
+		BackgroundColour:  &options.RGBA{R: 28, G: 27, B: 25, A: 1},
 		HideWindowOnClose: cfg.App.MinimizeToTray,
 		OnStartup:         app.startup,
 		Bind: []interface{}{
