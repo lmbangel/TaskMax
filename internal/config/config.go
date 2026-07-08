@@ -29,6 +29,13 @@ type AppConfig struct {
 	MinimizeToTray bool   `mapstructure:"minimize_to_tray" json:"minimize_to_tray"`
 }
 
+// MCPConfig controls the embedded MCP server that lets coding agents
+// (Claude Code etc.) manage tasks without driving the UI.
+type MCPConfig struct {
+	Enabled bool `mapstructure:"enabled" json:"enabled"`
+	Port    int  `mapstructure:"port" json:"port"` // listens on 127.0.0.1 only
+}
+
 // WindowConfig remembers where the user last put the widget. Saved is the
 // explicit "a position was stored" flag — (0,0) and negative coordinates are
 // all valid on multi-monitor setups, so no coordinate can act as a sentinel.
@@ -44,6 +51,7 @@ type Config struct {
 	Pomodoro PomodoroConfig `mapstructure:"pomodoro" json:"pomodoro"`
 	App      AppConfig      `mapstructure:"app" json:"app"`
 	Window   WindowConfig   `mapstructure:"window" json:"window"`
+	MCP      MCPConfig      `mapstructure:"mcp" json:"mcp"`
 }
 
 // setDefaults registers sensible defaults so the app works with zero config.
@@ -65,6 +73,9 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("window.x", 0)
 	v.SetDefault("window.y", 0)
 	v.SetDefault("window.saved", false)
+
+	v.SetDefault("mcp.enabled", true)
+	v.SetDefault("mcp.port", 7823)
 }
 
 // Load reads configuration from the given YAML path. If the file does not
@@ -120,6 +131,9 @@ func Save(path string, cfg *Config) error {
 	v.Set("window.y", cfg.Window.Y)
 	v.Set("window.saved", cfg.Window.Saved)
 
+	v.Set("mcp.enabled", cfg.MCP.Enabled)
+	v.Set("mcp.port", cfg.MCP.Port)
+
 	return v.WriteConfigAs(path)
 }
 
@@ -152,5 +166,8 @@ func (c *Config) applyFallbacks() {
 	}
 	if c.App.Accent == "" {
 		c.App.Accent = "duck"
+	}
+	if c.MCP.Port <= 0 || c.MCP.Port > 65535 {
+		c.MCP.Port = 7823
 	}
 }

@@ -228,6 +228,12 @@
       loadSessions()
     })
 
+    // An agent mutated tasks through the MCP server — reflect it live.
+    EventsOn('tasks:changed', () => {
+      tasks.refresh()
+      loadStats()
+    })
+
     statsInterval = setInterval(loadStats, 30000)
 
     checkForUpdate()
@@ -236,6 +242,7 @@
 
   onDestroy(() => {
     EventsOff('pomodoro:complete')
+    EventsOff('tasks:changed')
     if (statsInterval) clearInterval(statsInterval)
     if (updateInterval) clearInterval(updateInterval)
     timer.stop()

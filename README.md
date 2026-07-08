@@ -1,6 +1,6 @@
 # 🦆 TaskMax
 
-A cute, compact **desk widget for tasks and Pomodoro focus sessions**, built with Go + Wails + Svelte. It docks to the corner of your screen, stays on top while you work, and lives in your system tray when you close it. Fully offline on a local SQLite database out of the box — or point it at PostgreSQL/MySQL if you prefer.
+A cute, compact **desk widget for tasks and Pomodoro focus sessions — built for agentic coding**. Made with Go + Wails + Svelte, it docks to the corner of your screen, stays on top while you work, and lives in your system tray when you close it. Your coding agents (Claude Code & friends) connect over **MCP** to log tasks and start focus sessions without ever taking over your screen. Fully offline on a local SQLite database out of the box — or point it at PostgreSQL/MySQL if you prefer.
 
 > Why a duck? Every software engineer needs a [rubber duck](https://en.wikipedia.org/wiki/Rubber_duck_debugging) on their desk. The Pomodoro technique's tomato lives on as an optional accent theme.
 
@@ -36,6 +36,30 @@ TaskMax is calculator-sized (380×600), frameless, and always on top. It remembe
 - **`Ctrl+Alt+D`** summons or hides the widget from anywhere (Windows).
 - **Mini mode** (❐ in the titlebar) collapses it to just the timer ring.
 - **Launch on startup** — toggle in Settings to start TaskMax with Windows.
+
+### Built for agentic coding 🤖
+
+TaskMax ships an **embedded MCP server**, so coding agents — Claude Code (CLI, VS Code, desktop app), Cursor, or any MCP client — can manage your board **without touching your screen**. You keep the mouse; agents log their work in the background, and the widget updates live. Agent-created tasks carry a 🤖 marker.
+
+Connect Claude Code once:
+
+```bash
+claude mcp add --transport http taskmax http://localhost:7823/mcp
+```
+
+or per-project in `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "taskmax": { "type": "http", "url": "http://localhost:7823/mcp" }
+  }
+}
+```
+
+Agents get ten tools: `create_task`, `list_tasks`, `update_task`, `complete_task`, `delete_task`, `start_pomodoro`, `stop_pomodoro`, `get_timer_state`, `get_today_stats`, `get_activity`. Typical prompts: *"log what we just shipped and mark it done"*, *"what's on my board for today?"*, *"start a pomodoro on the auth refactor"*.
+
+The server listens on **localhost only** (default port 7823) and runs inside the TaskMax process — one data owner, many concurrent agent sessions. Toggle it under ⚙ Settings → Agents.
 
 ### Make it yours
 

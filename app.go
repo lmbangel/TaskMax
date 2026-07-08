@@ -57,7 +57,17 @@ func (a *App) startup(ctx context.Context) {
 	a.restoreWindowPosition()
 	a.startTray()
 	a.registerHotkey()
+	a.startMCP()
 	go a.dueReminderLoop()
+}
+
+// parseDueDate accepts a YYYY-MM-DD date for task due dates.
+func parseDueDate(s string) (time.Time, error) {
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid due_date %q — use YYYY-MM-DD", s)
+	}
+	return t, nil
 }
 
 // dueReminderLoop notifies once per day about tasks that are due today or

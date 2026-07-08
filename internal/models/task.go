@@ -16,6 +16,7 @@ type Task struct {
 	Tags          string     `json:"tags"`     // comma-separated
 	DueDate       *time.Time `json:"due_date"`
 	Recurrence    string     `json:"recurrence"`     // "", "daily", "weekly", "monthly"
+	Source        string     `json:"source"`         // "" = created in the UI, "agent" = via MCP
 	PomodoroCount int        `json:"pomodoro_count"` // how many work sessions logged against it
 	Position      int        `json:"position"`       // manual sort order for drag-to-reorder
 }

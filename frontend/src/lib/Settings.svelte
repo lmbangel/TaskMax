@@ -39,7 +39,8 @@
     draft = {
       database: { ...config.database },
       pomodoro: { ...config.pomodoro },
-      app: { accent: DEFAULT_ACCENT, ...config.app }
+      app: { accent: DEFAULT_ACCENT, ...config.app },
+      mcp: { enabled: true, port: 7823, ...config.mcp }
     }
     testState = 'idle'
     testMsg = ''
@@ -186,6 +187,21 @@
           <input type="checkbox" bind:checked={launchOnStartup} />
           <span>Launch TaskMax when Windows starts</span>
         </label>
+      </section>
+
+      <!-- Agents -->
+      <section>
+        <h3>Agents (MCP)</h3>
+        <label class="switch">
+          <input type="checkbox" bind:checked={draft.mcp.enabled} />
+          <span>Let coding agents manage tasks (MCP server)</span>
+        </label>
+        <p class="note">
+          Serves MCP on http://localhost:{draft.mcp.port}/mcp — local connections only.
+          Connect Claude Code with:<br />
+          <code>claude mcp add --transport http taskmax http://localhost:{draft.mcp.port}/mcp</code><br />
+          Changing this takes effect after an app restart.
+        </p>
       </section>
     </div>
 

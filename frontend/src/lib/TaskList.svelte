@@ -131,6 +131,9 @@
             {#if task.recurrence}
               <span class="repeat" title="Repeats {task.recurrence}">🔁</span>
             {/if}
+            {#if task.source === 'agent'}
+              <span class="agent" title="Created by an agent">🤖</span>
+            {/if}
             {#if task.pomodoro_count > 0}
               <span class="poms">{$mascot} {task.pomodoro_count}</span>
             {/if}
@@ -239,7 +242,8 @@
     color: var(--danger);
     font-weight: 700;
   }
-  .repeat {
+  .repeat,
+  .agent {
     font-size: 0.68rem;
   }
 

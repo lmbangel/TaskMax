@@ -16,6 +16,20 @@ export namespace config {
 	        this.minimize_to_tray = source["minimize_to_tray"];
 	    }
 	}
+	export class MCPConfig {
+	    enabled: boolean;
+	    port: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new MCPConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.enabled = source["enabled"];
+	        this.port = source["port"];
+	    }
+	}
 	export class WindowConfig {
 	    x: number;
 	    y: number;
@@ -73,6 +87,7 @@ export namespace config {
 	    pomodoro: PomodoroConfig;
 	    app: AppConfig;
 	    window: WindowConfig;
+	    mcp: MCPConfig;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -84,6 +99,7 @@ export namespace config {
 	        this.pomodoro = this.convertValues(source["pomodoro"], PomodoroConfig);
 	        this.app = this.convertValues(source["app"], AppConfig);
 	        this.window = this.convertValues(source["window"], WindowConfig);
+	        this.mcp = this.convertValues(source["mcp"], MCPConfig);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -104,6 +120,7 @@ export namespace config {
 		    return a;
 		}
 	}
+	
 	
 	
 
@@ -203,6 +220,7 @@ export namespace models {
 	    // Go type: time
 	    due_date?: any;
 	    recurrence: string;
+	    source: string;
 	    pomodoro_count: number;
 	    position: number;
 	
@@ -223,6 +241,7 @@ export namespace models {
 	        this.tags = source["tags"];
 	        this.due_date = this.convertValues(source["due_date"], null);
 	        this.recurrence = source["recurrence"];
+	        this.source = source["source"];
 	        this.pomodoro_count = source["pomodoro_count"];
 	        this.position = source["position"];
 	    }
