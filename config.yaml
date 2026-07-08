@@ -1,7 +1,7 @@
 app:
-    accent: duck
+    accent: tomato
     minimize_to_tray: true
-    theme: dark
+    theme: cosy
 database:
     dsn: tasks.db
     type: sqlite

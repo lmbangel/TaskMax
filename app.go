@@ -47,6 +47,12 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.pomodoro.SetContext(ctx)
 	a.dockToBottomRight()
+	a.startTray()
+}
+
+// shutdown is invoked by Wails when the application is quitting.
+func (a *App) shutdown(ctx context.Context) {
+	a.stopTray()
 }
 
 // dockToBottomRight parks the widget near the bottom-right corner of the

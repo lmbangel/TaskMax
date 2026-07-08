@@ -19,6 +19,7 @@
     EventsOn,
     EventsOff,
     WindowMinimise,
+    WindowHide,
     Quit
   } from '../wailsjs/runtime/runtime'
 
@@ -133,10 +134,11 @@
     loadStats()
   }
 
-  // Quit outright: the app has no tray icon yet, so hiding the window
-  // (minimize_to_tray) would leave no way to bring it back.
+  // With the tray icon in place, close can safely hide to the tray when the
+  // user has minimize_to_tray enabled; the tray restores or quits the app.
   function closeApp() {
-    Quit()
+    if (config?.app?.minimize_to_tray) WindowHide()
+    else Quit()
   }
 
   let statsInterval = null

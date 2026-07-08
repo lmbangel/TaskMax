@@ -3,6 +3,7 @@ module taskmax
 go 1.25.0
 
 require (
+	github.com/energye/systray v1.0.3
 	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4
 	github.com/glebarez/sqlite v1.11.0
 	github.com/spf13/viper v1.19.0

@@ -52,6 +52,7 @@ func main() {
 		BackgroundColour:  &options.RGBA{R: 28, G: 27, B: 25, A: 1},
 		HideWindowOnClose: cfg.App.MinimizeToTray,
 		OnStartup:         app.startup,
+		OnShutdown:        app.shutdown,
 		Bind: []interface{}{
 			app,
 		},
