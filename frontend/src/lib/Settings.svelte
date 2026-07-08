@@ -1,7 +1,14 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { TestConnection } from '../../wailsjs/go/main/App'
+  import { TestConnection, GetAppVersion } from '../../wailsjs/go/main/App'
   import { ACCENTS, DEFAULT_ACCENT } from './accents.js'
+
+  let version = ''
+  $: if (open && !version) {
+    GetAppVersion()
+      .then((v) => (version = v))
+      .catch(() => {})
+  }
 
   export let open = false
   export let config = null
@@ -153,6 +160,9 @@
     </div>
 
     <footer>
+      {#if version}
+        <span class="app-version">TaskMax {version}</span>
+      {/if}
       <button class="btn btn-ghost" on:click={close}>Cancel</button>
       <button class="btn btn-accent" on:click={save}>Save settings</button>
     </footer>
@@ -295,10 +305,16 @@
   }
   footer {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: 0.6rem;
     padding: 1rem 1.5rem 1.25rem;
     border-top: 1px solid var(--surface-2);
+  }
+  .app-version {
+    margin-right: auto;
+    font-size: 0.7rem;
+    color: var(--text-faint);
   }
   @keyframes slide {
     from {

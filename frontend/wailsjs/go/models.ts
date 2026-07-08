@@ -86,6 +86,29 @@ export namespace config {
 
 }
 
+export namespace main {
+	
+	export class UpdateInfo {
+	    available: boolean;
+	    current_version: string;
+	    latest_version: string;
+	    url: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.available = source["available"];
+	        this.current_version = source["current_version"];
+	        this.latest_version = source["latest_version"];
+	        this.url = source["url"];
+	    }
+	}
+
+}
+
 export namespace models {
 	
 	export class PomodoroSession {

@@ -13,13 +13,15 @@
     GetConfig,
     SaveConfig,
     GetTodayStats,
-    GetSessionsForTask
+    GetSessionsForTask,
+    CheckForUpdate
   } from '../wailsjs/go/main/App'
   import {
     EventsOn,
     EventsOff,
     WindowMinimise,
     WindowHide,
+    BrowserOpenURL,
     Quit
   } from '../wailsjs/runtime/runtime'
 
@@ -141,7 +143,28 @@
     else Quit()
   }
 
+  // ----- Update check -----
+  let update = null // UpdateInfo from Go when a newer release exists
+
+  async function checkForUpdate() {
+    try {
+      const u = await CheckForUpdate()
+      // Stay quiet about versions the user already dismissed.
+      if (u?.available && localStorage.getItem('update-dismissed') !== u.latest_version) {
+        update = u
+      }
+    } catch (e) {
+      /* offline or rate-limited — try again next interval */
+    }
+  }
+
+  function dismissUpdate() {
+    if (update) localStorage.setItem('update-dismissed', update.latest_version)
+    update = null
+  }
+
   let statsInterval = null
+  let updateInterval = null
 
   onMount(async () => {
     try {
@@ -161,11 +184,15 @@
     })
 
     statsInterval = setInterval(loadStats, 30000)
+
+    checkForUpdate()
+    updateInterval = setInterval(checkForUpdate, 24 * 60 * 60 * 1000)
   })
 
   onDestroy(() => {
     EventsOff('pomodoro:complete')
     if (statsInterval) clearInterval(statsInterval)
+    if (updateInterval) clearInterval(updateInterval)
     timer.stop()
   })
 </script>
@@ -181,6 +208,14 @@
       <button class="win-btn close" title="Close" on:click={closeApp}>✕</button>
     </div>
   </header>
+
+  {#if update}
+    <div class="update-banner">
+      <span class="ub-text">{update.latest_version} is available</span>
+      <button class="ub-get" on:click={() => BrowserOpenURL(update.url)}>Get update</button>
+      <button class="ub-close" title="Dismiss" on:click={dismissUpdate}>✕</button>
+    </div>
+  {/if}
 
   <nav class="tabs">
     {#each TABS as t}
@@ -300,6 +335,49 @@
   .win-btn.close:hover {
     background: var(--danger);
     color: #fff;
+  }
+
+  /* ----- Update banner ----- */
+  .update-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0.75rem 0.6rem;
+    padding: 0.45rem 0.4rem 0.45rem 0.75rem;
+    border-radius: var(--radius-input);
+    background: var(--accent-soft);
+    flex: 0 0 auto;
+  }
+  .ub-text {
+    flex: 1 1 auto;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ub-get {
+    flex: 0 0 auto;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .ub-close {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--accent-ink);
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+  .ub-close:hover {
+    background: var(--surface-2);
   }
 
   /* ----- Tabs ----- */

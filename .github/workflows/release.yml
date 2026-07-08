@@ -36,7 +36,7 @@ jobs:
           Add-Content $env:GITHUB_PATH 'C:\Program Files (x86)\NSIS'
           Add-Content $env:GITHUB_PATH 'C:\Program Files (x86)\NSIS\Bin'
       - name: Build portable exe + NSIS installer
-        run: wails build -platform windows/amd64 -nsis
+        run: wails build -platform windows/amd64 -nsis -ldflags "-X main.version=${{ github.ref_name }}"
       - name: Stage artifacts
         shell: pwsh
         run: |
@@ -63,7 +63,7 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
       - name: Build universal .app (Intel + Apple Silicon)
-        run: wails build -platform darwin/universal
+        run: wails build -platform darwin/universal -ldflags "-X main.version=${{ github.ref_name }}"
       - name: Zip app bundle
         run: ditto -c -k --keepParent build/bin/TaskMax.app TaskMax-macos-universal.zip
       - uses: actions/upload-artifact@v4
@@ -88,7 +88,7 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
       - name: Build
-        run: wails build -platform linux/amd64 -tags webkit2_41
+        run: wails build -platform linux/amd64 -tags webkit2_41 -ldflags "-X main.version=${{ github.ref_name }}"
       - name: Stage artifact
         run: tar -czf TaskMax-linux-amd64.tar.gz -C build/bin TaskMax
       - uses: actions/upload-artifact@v4
