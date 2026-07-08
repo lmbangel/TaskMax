@@ -15,7 +15,9 @@
   // Re-seed the form whenever it opens or the target task changes.
   $: if (open) seed(task)
 
-  let lastSeeded = null
+  // undefined = "force reseed on next open"; null is a valid create-mode task,
+  // so it can't double as the sentinel or stale values leak into New Task.
+  let lastSeeded
   function seed(t) {
     if (t === lastSeeded) return
     lastSeeded = t
@@ -27,7 +29,7 @@
   }
 
   function close() {
-    lastSeeded = null
+    lastSeeded = undefined
     dispatch('close')
   }
 
