@@ -14,7 +14,8 @@
     SaveConfig,
     GetTodayStats,
     GetSessionsForTask,
-    CheckForUpdate
+    CheckForUpdate,
+    SaveWindowPosition
   } from '../wailsjs/go/main/App'
   import {
     EventsOn,
@@ -129,7 +130,9 @@
   }
 
   async function saveSettings(e) {
-    config = e.detail
+    // Merge over the existing config: the Settings draft only carries the
+    // sections it edits, and e.g. the remembered window position must survive.
+    config = { ...config, ...e.detail }
     await SaveConfig(config)
     applyAppearance(config.app.theme, config.app.accent)
     settingsOpen = false
@@ -138,7 +141,15 @@
 
   // With the tray icon in place, close can safely hide to the tray when the
   // user has minimize_to_tray enabled; the tray restores or quits the app.
-  function closeApp() {
+  // Either way the window position is remembered first (quitting also saves
+  // via the Go shutdown hook, but hiding would otherwise lose it on a later
+  // kill).
+  async function closeApp() {
+    try {
+      await SaveWindowPosition()
+    } catch (e) {
+      /* never block closing on this */
+    }
     if (config?.app?.minimize_to_tray) WindowHide()
     else Quit()
   }

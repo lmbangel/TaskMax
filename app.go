@@ -46,13 +46,43 @@ func NewApp(cfg *config.Config, cfgPath string, gdb *gorm.DB) *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.pomodoro.SetContext(ctx)
-	a.dockToBottomRight()
+	a.restoreWindowPosition()
 	a.startTray()
 }
 
 // shutdown is invoked by Wails when the application is quitting.
 func (a *App) shutdown(ctx context.Context) {
+	a.SaveWindowPosition()
 	a.stopTray()
+}
+
+// restoreWindowPosition puts the widget back where the user last left it,
+// or docks it bottom-right on first run / if the stored position is junk.
+func (a *App) restoreWindowPosition() {
+	w := a.cfg.Window
+	if w.Saved && positionSane(w.X, w.Y) {
+		wailsruntime.WindowSetPosition(a.ctx, w.X, w.Y)
+		return
+	}
+	a.dockToBottomRight()
+}
+
+// SaveWindowPosition persists the current window position. Called by the
+// frontend before hiding to the tray and by the shutdown hook, so both exit
+// paths remember where the widget was.
+func (a *App) SaveWindowPosition() {
+	x, y := wailsruntime.WindowGetPosition(a.ctx)
+	if !positionSane(x, y) {
+		return
+	}
+	a.cfg.Window = config.WindowConfig{X: x, Y: y, Saved: true}
+	_ = config.Save(a.cfgPath, a.cfg)
+}
+
+// positionSane rejects the -32000 coordinates Windows reports for minimised
+// windows and anything absurdly far outside a plausible virtual desktop.
+func positionSane(x, y int) bool {
+	return x > -10000 && x < 20000 && y > -10000 && y < 20000
 }
 
 // dockToBottomRight parks the widget near the bottom-right corner of the

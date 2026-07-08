@@ -29,6 +29,8 @@ export function ReorderTasks(arg1:Array<number>):Promise<void>;
 
 export function SaveConfig(arg1:config.Config):Promise<void>;
 
+export function SaveWindowPosition():Promise<void>;
+
 export function StartPomodoro(arg1:number,arg2:string):Promise<void>;
 
 export function StopPomodoro():Promise<void>;

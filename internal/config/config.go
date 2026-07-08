@@ -27,11 +27,21 @@ type AppConfig struct {
 	MinimizeToTray bool   `mapstructure:"minimize_to_tray" json:"minimize_to_tray"`
 }
 
+// WindowConfig remembers where the user last put the widget. Saved is the
+// explicit "a position was stored" flag — (0,0) and negative coordinates are
+// all valid on multi-monitor setups, so no coordinate can act as a sentinel.
+type WindowConfig struct {
+	X     int  `mapstructure:"x" json:"x"`
+	Y     int  `mapstructure:"y" json:"y"`
+	Saved bool `mapstructure:"saved" json:"saved"`
+}
+
 // Config is the root configuration object loaded from config.yaml.
 type Config struct {
 	Database DatabaseConfig `mapstructure:"database" json:"database"`
 	Pomodoro PomodoroConfig `mapstructure:"pomodoro" json:"pomodoro"`
 	App      AppConfig      `mapstructure:"app" json:"app"`
+	Window   WindowConfig   `mapstructure:"window" json:"window"`
 }
 
 // setDefaults registers sensible defaults so the app works with zero config.
@@ -47,6 +57,10 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("app.theme", "cosy")
 	v.SetDefault("app.accent", "duck")
 	v.SetDefault("app.minimize_to_tray", true)
+
+	v.SetDefault("window.x", 0)
+	v.SetDefault("window.y", 0)
+	v.SetDefault("window.saved", false)
 }
 
 // Load reads configuration from the given YAML path. If the file does not
@@ -95,6 +109,10 @@ func Save(path string, cfg *Config) error {
 	v.Set("app.theme", cfg.App.Theme)
 	v.Set("app.accent", cfg.App.Accent)
 	v.Set("app.minimize_to_tray", cfg.App.MinimizeToTray)
+
+	v.Set("window.x", cfg.Window.X)
+	v.Set("window.y", cfg.Window.Y)
+	v.Set("window.saved", cfg.Window.Saved)
 
 	return v.WriteConfigAs(path)
 }

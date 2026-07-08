@@ -143,7 +143,7 @@ Use the **Test connection** button in Settings to validate a DSN before saving. 
 - [x] **Downloadable installer** — Windows installer + macOS/Linux builds, published automatically as GitHub Releases on every version tag
 - [ ] Code-signing the release binaries (currently unsigned → SmartScreen/Gatekeeper warnings)
 - [x] Single-instance guard — launching the app again just brings the existing widget back
-- [ ] Remember the window position between restarts
+- [x] Remember the window position between restarts
 - [ ] Tray icon that matches the chosen accent
 - [ ] Auto-set a task to "in progress" when you start focusing on it
 

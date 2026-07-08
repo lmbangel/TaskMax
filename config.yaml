@@ -10,3 +10,7 @@ pomodoro:
     sessions_before_long: 4
     short_break: 5
     work_duration: 25
+window:
+    saved: true
+    x: 1500
+    "y": 300

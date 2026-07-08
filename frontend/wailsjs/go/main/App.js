@@ -50,6 +50,10 @@ export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }
 
+export function SaveWindowPosition() {
+  return window['go']['main']['App']['SaveWindowPosition']();
+}
+
 export function StartPomodoro(arg1, arg2) {
   return window['go']['main']['App']['StartPomodoro'](arg1, arg2);
 }

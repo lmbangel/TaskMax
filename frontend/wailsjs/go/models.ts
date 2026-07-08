@@ -16,6 +16,22 @@ export namespace config {
 	        this.minimize_to_tray = source["minimize_to_tray"];
 	    }
 	}
+	export class WindowConfig {
+	    x: number;
+	    y: number;
+	    saved: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new WindowConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.x = source["x"];
+	        this.y = source["y"];
+	        this.saved = source["saved"];
+	    }
+	}
 	export class PomodoroConfig {
 	    work_duration: number;
 	    short_break: number;
@@ -52,6 +68,7 @@ export namespace config {
 	    database: DatabaseConfig;
 	    pomodoro: PomodoroConfig;
 	    app: AppConfig;
+	    window: WindowConfig;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -62,6 +79,7 @@ export namespace config {
 	        this.database = this.convertValues(source["database"], DatabaseConfig);
 	        this.pomodoro = this.convertValues(source["pomodoro"], PomodoroConfig);
 	        this.app = this.convertValues(source["app"], AppConfig);
+	        this.window = this.convertValues(source["window"], WindowConfig);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -82,6 +100,7 @@ export namespace config {
 		    return a;
 		}
 	}
+	
 	
 
 }
