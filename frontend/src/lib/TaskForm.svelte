@@ -11,6 +11,7 @@
   let priority = 'medium'
   let tags = ''
   let dueDate = ''
+  let recurrence = ''
 
   // Re-seed the form whenever it opens or the target task changes.
   $: if (open) seed(task)
@@ -26,6 +27,7 @@
     priority = t?.priority || 'medium'
     tags = t?.tags || ''
     dueDate = t?.due_date ? String(t.due_date).slice(0, 10) : ''
+    recurrence = t?.recurrence || ''
   }
 
   function close() {
@@ -45,7 +47,8 @@
         .map((s) => s.trim())
         .filter(Boolean)
         .join(','),
-      due_date: dueDate ? `${dueDate}T00:00:00Z` : null
+      due_date: dueDate ? `${dueDate}T00:00:00Z` : null,
+      recurrence: recurrence
     }
     dispatch('save', payload)
     close()
@@ -84,6 +87,19 @@
           <label for="tf-due">Due date</label>
           <input id="tf-due" type="date" bind:value={dueDate} />
         </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="tf-repeat">Repeat</label>
+          <select id="tf-repeat" bind:value={recurrence}>
+            <option value="">Never</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div></div>
       </div>
 
       <div>

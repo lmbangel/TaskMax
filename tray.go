@@ -34,6 +34,9 @@ func (a *App) trayReady() {
 
 // showWindow restores the widget from the tray or the taskbar.
 func (a *App) showWindow() {
+	a.visMu.Lock()
+	a.hidden = false
+	a.visMu.Unlock()
 	wailsruntime.WindowShow(a.ctx)
 	wailsruntime.WindowUnminimise(a.ctx)
 }

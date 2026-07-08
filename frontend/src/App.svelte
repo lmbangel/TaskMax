@@ -15,13 +15,14 @@
     GetTodayStats,
     GetSessionsForTask,
     CheckForUpdate,
-    SaveWindowPosition
+    HideToTray
   } from '../wailsjs/go/main/App'
   import {
     EventsOn,
     EventsOff,
     WindowMinimise,
-    WindowHide,
+    WindowSetSize,
+    WindowSetMinSize,
     BrowserOpenURL,
     Quit
   } from '../wailsjs/runtime/runtime'
@@ -41,8 +42,11 @@
 
   let tab = 'focus'
   let filter = 'all'
+  let search = ''
+  let tagFilter = null
   let selectedId = null
   let config = null
+  let mini = false
 
   let formOpen = false
   let formTask = null
@@ -52,8 +56,25 @@
   let sessions = []
 
   $: selectedTask = $tasks.find((t) => t.ID === selectedId) || null
-  $: filtered =
-    filter === 'all' ? $tasks : $tasks.filter((t) => t.status === filter)
+
+  function matchesSearch(t, q) {
+    if (!q) return true
+    const hay = `${t.title} ${t.description} ${t.tags}`.toLowerCase()
+    return hay.includes(q)
+  }
+  function matchesTag(t, tag) {
+    if (!tag) return true
+    return (t.tags || '')
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .includes(tag.toLowerCase())
+  }
+  $: filtered = $tasks.filter(
+    (t) =>
+      (filter === 'all' || t.status === filter) &&
+      matchesSearch(t, search.trim().toLowerCase()) &&
+      matchesTag(t, tagFilter)
+  )
 
   // Keep selection valid as the list changes.
   $: if (selectedId && !$tasks.some((t) => t.ID === selectedId)) {
@@ -140,18 +161,31 @@
   }
 
   // With the tray icon in place, close can safely hide to the tray when the
-  // user has minimize_to_tray enabled; the tray restores or quits the app.
-  // Either way the window position is remembered first (quitting also saves
-  // via the Go shutdown hook, but hiding would otherwise lose it on a later
-  // kill).
-  async function closeApp() {
-    try {
-      await SaveWindowPosition()
-    } catch (e) {
-      /* never block closing on this */
-    }
-    if (config?.app?.minimize_to_tray) WindowHide()
+  // user has minimize_to_tray enabled. HideToTray (Go) saves the window
+  // position first; quitting saves it via the shutdown hook.
+  function closeApp() {
+    if (config?.app?.minimize_to_tray) HideToTray()
     else Quit()
+  }
+
+  // ----- Mini mode: collapse to just the timer -----
+  const NORMAL = { w: 380, h: 600, minW: 340, minH: 520 }
+  const MINI = { w: 300, h: 380 }
+
+  function toggleMini() {
+    mini = !mini
+    if (mini) {
+      WindowSetMinSize(MINI.w, MINI.h)
+      WindowSetSize(MINI.w, MINI.h)
+    } else {
+      WindowSetMinSize(NORMAL.minW, NORMAL.minH)
+      WindowSetSize(NORMAL.w, NORMAL.h)
+    }
+  }
+
+  function clickTag(e) {
+    tagFilter = tagFilter === e.detail ? null : e.detail
+    tab = 'tasks'
   }
 
   // ----- Update check -----
@@ -214,11 +248,22 @@
     <span class="logo">{$mascot}</span>
     <span class="name">TaskMax</span>
     <div class="win-controls" style="--wails-draggable: no-drag">
-      <button class="win-btn" title="Settings" on:click={() => (settingsOpen = true)}>⚙</button>
-      <button class="win-btn" title="Minimize" on:click={WindowMinimise}>–</button>
+      <button class="win-btn" title={mini ? 'Expand' : 'Mini mode'} on:click={toggleMini}>
+        {mini ? '⛶' : '❐'}
+      </button>
+      {#if !mini}
+        <button class="win-btn" title="Settings" on:click={() => (settingsOpen = true)}>⚙</button>
+        <button class="win-btn" title="Minimize" on:click={WindowMinimise}>–</button>
+      {/if}
       <button class="win-btn close" title="Close" on:click={closeApp}>✕</button>
     </div>
   </header>
+
+  {#if mini}
+    <main class="content">
+      <PomodoroTimer task={selectedTask} {config} doneToday={stats.work_sessions} mini />
+    </main>
+  {:else}
 
   {#if update}
     <div class="update-banner">
@@ -245,7 +290,7 @@
           <button class="btn btn-ghost ft-clear" title="Clear task" on:click={() => (selectedId = null)}>✕</button>
         </div>
       {/if}
-      <PomodoroTimer task={selectedTask} {config} />
+      <PomodoroTimer task={selectedTask} {config} doneToday={stats.work_sessions} />
     {:else if tab === 'tasks'}
       <button class="btn btn-accent new-btn" on:click={newTask}>+ New task</button>
 
@@ -255,6 +300,15 @@
             {f.label}
           </button>
         {/each}
+      </div>
+
+      <div class="search-row">
+        <input class="search" type="search" placeholder="Search tasks…" bind:value={search} />
+        {#if tagFilter}
+          <button class="tag-active" title="Clear tag filter" on:click={() => (tagFilter = null)}>
+            #{tagFilter} ✕
+          </button>
+        {/if}
       </div>
 
       {#if selectedTask}
@@ -286,11 +340,13 @@
         on:select={selectTask}
         on:statusChange={changeStatus}
         on:reorder={reorderTasks}
+        on:tagClick={clickTag}
       />
     {:else}
       <StatsPanel {stats} {sessions} task={selectedTask} />
     {/if}
   </main>
+  {/if}
 </div>
 
 <TaskForm open={formOpen} task={formTask} on:save={saveTask} on:close={() => (formOpen = false)} />
@@ -479,6 +535,28 @@
   .filter.active {
     background: var(--accent-soft);
     color: var(--accent-ink);
+  }
+
+  .search-row {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+  .search {
+    flex: 1 1 auto;
+    font-size: 0.8rem;
+    padding: 0.45rem 0.65rem;
+  }
+  .tag-active {
+    flex: 0 0 auto;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.35rem 0.55rem;
+    border-radius: 999px;
+    background: var(--info-soft);
+    color: var(--info);
+    white-space: nowrap;
   }
 
   /* ----- Selected task detail (Tasks tab) ----- */

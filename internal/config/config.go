@@ -14,10 +14,12 @@ type DatabaseConfig struct {
 
 // PomodoroConfig holds the timing preferences for the Pomodoro cycle.
 type PomodoroConfig struct {
-	WorkDuration       int `mapstructure:"work_duration" json:"work_duration"`
-	ShortBreak         int `mapstructure:"short_break" json:"short_break"`
-	LongBreak          int `mapstructure:"long_break" json:"long_break"`
-	SessionsBeforeLong int `mapstructure:"sessions_before_long" json:"sessions_before_long"`
+	WorkDuration       int  `mapstructure:"work_duration" json:"work_duration"`
+	ShortBreak         int  `mapstructure:"short_break" json:"short_break"`
+	LongBreak          int  `mapstructure:"long_break" json:"long_break"`
+	SessionsBeforeLong int  `mapstructure:"sessions_before_long" json:"sessions_before_long"`
+	DailyGoal          int  `mapstructure:"daily_goal" json:"daily_goal"` // work sessions per day
+	Sound              bool `mapstructure:"sound" json:"sound"`           // chime when a session ends
 }
 
 // AppConfig holds general application preferences.
@@ -53,6 +55,8 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("pomodoro.short_break", 5)
 	v.SetDefault("pomodoro.long_break", 15)
 	v.SetDefault("pomodoro.sessions_before_long", 4)
+	v.SetDefault("pomodoro.daily_goal", 8)
+	v.SetDefault("pomodoro.sound", true)
 
 	v.SetDefault("app.theme", "cosy")
 	v.SetDefault("app.accent", "duck")
@@ -105,6 +109,8 @@ func Save(path string, cfg *Config) error {
 	v.Set("pomodoro.short_break", cfg.Pomodoro.ShortBreak)
 	v.Set("pomodoro.long_break", cfg.Pomodoro.LongBreak)
 	v.Set("pomodoro.sessions_before_long", cfg.Pomodoro.SessionsBeforeLong)
+	v.Set("pomodoro.daily_goal", cfg.Pomodoro.DailyGoal)
+	v.Set("pomodoro.sound", cfg.Pomodoro.Sound)
 
 	v.Set("app.theme", cfg.App.Theme)
 	v.Set("app.accent", cfg.App.Accent)
@@ -137,6 +143,9 @@ func (c *Config) applyFallbacks() {
 	}
 	if c.Pomodoro.SessionsBeforeLong <= 0 {
 		c.Pomodoro.SessionsBeforeLong = 4
+	}
+	if c.Pomodoro.DailyGoal <= 0 {
+		c.Pomodoro.DailyGoal = 8
 	}
 	if c.App.Theme == "" {
 		c.App.Theme = "cosy"

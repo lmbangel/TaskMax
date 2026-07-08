@@ -241,9 +241,15 @@ func (s *PomodoroService) complete(ctx context.Context) {
 	s.cancel = nil
 	s.mu.Unlock()
 
-	// Desktop notification (best-effort — failures are non-fatal).
+	// Desktop notification and chime (best-effort — failures are non-fatal).
 	title, body := notificationText(finishedType, nextType)
 	_ = beeep.Notify(title, body, "")
+	if s.cfg.Pomodoro.Sound {
+		go func() {
+			_ = beeep.Beep(660, 250)
+			_ = beeep.Beep(880, 350)
+		}()
+	}
 
 	s.emit(EventComplete, CompletePayload{
 		FinishedType: finishedType,
@@ -300,6 +306,49 @@ func (s *PomodoroService) TodayStats() PomodoroStats {
 	return stats
 }
 
+// DailyActivity is one day's completed focus work, for the activity heatmap.
+type DailyActivity struct {
+	Date    string `json:"date"` // local date, "2006-01-02"
+	Count   int    `json:"count"`
+	Minutes int    `json:"minutes"`
+}
+
+// DailyActivityRange aggregates completed work sessions per local day for the
+// last `days` days (today included). Days without activity are omitted.
+func (s *PomodoroService) DailyActivityRange(days int) ([]DailyActivity, error) {
+	if days <= 0 || days > 400 {
+		days = 112
+	}
+	now := time.Now()
+	start := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).
+		AddDate(0, 0, -(days - 1))
+
+	var sessions []models.PomodoroSession
+	err := s.db.Where("completed = ? AND type = ? AND started_at >= ?", true, SessionWork, start).
+		Find(&sessions).Error
+	if err != nil {
+		return nil, err
+	}
+
+	byDay := map[string]*DailyActivity{}
+	for _, sess := range sessions {
+		key := sess.StartedAt.Local().Format("2006-01-02")
+		d, ok := byDay[key]
+		if !ok {
+			d = &DailyActivity{Date: key}
+			byDay[key] = d
+		}
+		d.Count++
+		d.Minutes += sess.Duration
+	}
+
+	out := make([]DailyActivity, 0, len(byDay))
+	for _, d := range byDay {
+		out = append(out, *d)
+	}
+	return out, nil
+}
+
 // emit sends a Wails runtime event if the context has been wired up.
 func (s *PomodoroService) emit(event string, data interface{}) {
 	if s.ctx == nil {
@@ -313,11 +362,11 @@ func notificationText(finished, next string) (string, string) {
 	switch finished {
 	case SessionWork:
 		if next == SessionLongBreak {
-			return "🍅 Work session complete!", "Great focus — time for a long break 🌿"
+			return "🦆 Work session complete!", "Great focus — time for a long break 🌿"
 		}
-		return "🍅 Work session complete!", "Nicely done — take a short break ☕"
+		return "🦆 Work session complete!", "Nicely done — take a short break ☕"
 	case SessionShortBreak, SessionLongBreak:
-		return "Break's over ✨", "Ready to focus? Starting your next work session 🍅"
+		return "Break's over ✨", "Ready to focus? Starting your next work session 🦆"
 	default:
 		return "TaskMax", "Session complete."
 	}

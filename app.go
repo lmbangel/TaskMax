@@ -3,7 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
 
+	"github.com/gen2brain/beeep"
 	"gorm.io/gorm"
 
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -29,6 +32,11 @@ type App struct {
 	db       *gorm.DB
 	tasks    *services.TaskService
 	pomodoro *services.PomodoroService
+
+	visMu  sync.Mutex
+	hidden bool // window hidden to the tray (tracked for the global hotkey)
+
+	lastDueNotify string // local date ("2006-01-02") of the last due-task reminder
 }
 
 // NewApp wires up the services around an open database connection.
@@ -48,6 +56,41 @@ func (a *App) startup(ctx context.Context) {
 	a.pomodoro.SetContext(ctx)
 	a.restoreWindowPosition()
 	a.startTray()
+	a.registerHotkey()
+	go a.dueReminderLoop()
+}
+
+// dueReminderLoop notifies once per day about tasks that are due today or
+// overdue. It checks shortly after launch and then every six hours.
+func (a *App) dueReminderLoop() {
+	time.Sleep(15 * time.Second)
+	for {
+		a.notifyDueTasks()
+		time.Sleep(6 * time.Hour)
+	}
+}
+
+func (a *App) notifyDueTasks() {
+	today := time.Now().Format("2006-01-02")
+	if a.lastDueNotify == today {
+		return
+	}
+	now := time.Now()
+	endOfToday := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
+
+	var count int64
+	a.db.Model(&models.Task{}).
+		Where("status != ? AND due_date IS NOT NULL AND due_date <= ?", "done", endOfToday).
+		Count(&count)
+	if count == 0 {
+		return
+	}
+	a.lastDueNotify = today
+	label := "tasks are"
+	if count == 1 {
+		label = "task is"
+	}
+	_ = beeep.Notify("🦆 TaskMax", fmt.Sprintf("%d %s due today or overdue.", count, label), "")
 }
 
 // shutdown is invoked by Wails when the application is quitting.
@@ -145,8 +188,12 @@ func (a *App) ReorderTasks(orderedIDs []uint) error {
 
 // ----- Pomodoro -----
 
-// StartPomodoro starts or resumes a countdown for a task.
+// StartPomodoro starts or resumes a countdown for a task. Focusing on a
+// "todo" task moves it to "in_progress" so the Doing tab reflects reality.
 func (a *App) StartPomodoro(taskID uint, sessionType string) error {
+	if (sessionType == "" || sessionType == services.SessionWork) && taskID != 0 {
+		_ = a.tasks.SetInProgressIfTodo(taskID)
+	}
 	return a.pomodoro.Start(taskID, sessionType)
 }
 
@@ -168,6 +215,47 @@ func (a *App) GetSessionsForTask(taskID uint) ([]models.PomodoroSession, error) 
 // GetTodayStats returns today's focus statistics.
 func (a *App) GetTodayStats() services.PomodoroStats {
 	return a.pomodoro.TodayStats()
+}
+
+// GetDailyActivity returns per-day completed work sessions for the activity
+// heatmap (last `days` days; days without sessions are omitted).
+func (a *App) GetDailyActivity(days int) ([]services.DailyActivity, error) {
+	return a.pomodoro.DailyActivityRange(days)
+}
+
+// ----- Window visibility -----
+
+// HideToTray remembers the window position and hides the widget to the tray.
+func (a *App) HideToTray() {
+	a.SaveWindowPosition()
+	a.visMu.Lock()
+	a.hidden = true
+	a.visMu.Unlock()
+	wailsruntime.WindowHide(a.ctx)
+}
+
+// toggleVisibility flips between hidden-in-tray and visible; bound to the
+// global hotkey.
+func (a *App) toggleVisibility() {
+	a.visMu.Lock()
+	hidden := a.hidden
+	a.visMu.Unlock()
+	if hidden {
+		a.showWindow()
+	} else {
+		a.HideToTray()
+	}
+}
+
+// GetLaunchOnStartup reports whether TaskMax starts with the OS.
+func (a *App) GetLaunchOnStartup() bool {
+	enabled, err := launchOnStartupEnabled()
+	return err == nil && enabled
+}
+
+// SetLaunchOnStartup enables or disables starting TaskMax with the OS.
+func (a *App) SetLaunchOnStartup(enabled bool) error {
+	return setLaunchOnStartup(enabled)
 }
 
 // ----- Config -----

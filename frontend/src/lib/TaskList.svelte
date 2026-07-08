@@ -25,6 +25,27 @@
       .filter(Boolean)
   }
 
+  function dueLabel(t) {
+    return t.due_date ? String(t.due_date).slice(5, 10) : ''
+  }
+
+  function isOverdue(t) {
+    if (!t.due_date || t.status === 'done') return false
+    const today = new Date()
+    today.setHours(23, 59, 59, 999)
+    return new Date(t.due_date) < today && !isDueToday(t)
+  }
+
+  function isDueToday(t) {
+    if (!t.due_date) return false
+    return String(t.due_date).slice(0, 10) === new Date().toISOString().slice(0, 10)
+  }
+
+  function clickTag(tag, e) {
+    e.stopPropagation()
+    dispatch('tagClick', tag)
+  }
+
   function cycleStatus(task, e) {
     e.stopPropagation()
     dispatch('statusChange', { ...task, status: STATUS_CYCLE[task.status] || 'todo' })
@@ -97,11 +118,19 @@
           <span class="badge {task.priority}">{task.priority}</span>
         </div>
 
-        {#if tagList(task.tags).length || task.pomodoro_count > 0}
+        {#if tagList(task.tags).length || task.pomodoro_count > 0 || task.due_date || task.recurrence}
           <div class="meta">
             {#each tagList(task.tags) as tag}
-              <span class="chip">#{tag}</span>
+              <button class="chip" on:click={(e) => clickTag(tag, e)}>#{tag}</button>
             {/each}
+            {#if task.due_date}
+              <span class="due" class:overdue={isOverdue(task)} class:today={isDueToday(task)}>
+                📅 {dueLabel(task)}{isOverdue(task) ? ' !' : ''}
+              </span>
+            {/if}
+            {#if task.recurrence}
+              <span class="repeat" title="Repeats {task.recurrence}">🔁</span>
+            {/if}
             {#if task.pomodoro_count > 0}
               <span class="poms">{$mascot} {task.pomodoro_count}</span>
             {/if}
@@ -196,6 +225,22 @@
     font-size: 0.7rem;
     color: var(--text-muted);
     font-weight: 600;
+  }
+  .due {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .due.today {
+    color: var(--warning);
+  }
+  .due.overdue {
+    color: var(--danger);
+    font-weight: 700;
+  }
+  .repeat {
+    font-size: 0.68rem;
   }
 
   .empty {

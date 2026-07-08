@@ -14,7 +14,7 @@ A cute, compact **desk widget for tasks and Pomodoro focus sessions**, built wit
 
 ### Focus timer
 
-A classic Pomodoro cycle: 25-minute work sessions, short breaks, and a long break every 4 sessions (all adjustable). The countdown runs in Go, so it keeps ticking even when the UI is hidden. When a session ends you get a desktop notification and the app rolls into the next session automatically. Completed sessions are counted against the task you were focusing on.
+A classic Pomodoro cycle: 25-minute work sessions, short breaks, and a long break every 4 sessions (all adjustable). The countdown runs in Go, so it keeps ticking even when the UI is hidden. When a session ends you get a desktop notification and a soft chime (mutable in Settings), and the app rolls into the next session automatically. Completed sessions are counted against the task you were focusing on — and starting a session on a todo task automatically moves it to **In Progress**. A **daily goal** (default 8 sessions) shows as a progress bar under the timer.
 
 ### Task management
 
@@ -22,15 +22,20 @@ A classic Pomodoro cycle: 25-minute work sessions, short breaks, and a long brea
 |:--:|:--:|:--:|
 | ![Tasks](docs/screenshots/tasks.png) | ![New task](docs/screenshots/new-task.png) | ![Stats](docs/screenshots/stats.png) |
 
-- Tasks carry a **title, description, priority, due date, and tags**.
-- Click a task's checkbox to cycle its status: **todo → in progress → done**. Filter the list by status with the All / Todo / Doing / Done tabs.
+- Tasks carry a **title, description, priority, due date, tags, and a repeat rule** (daily / weekly / monthly — completing a recurring task brings it back with the next due date).
+- **Due dates are live**: tasks due today are highlighted, overdue ones flagged in red, and TaskMax sends a daily reminder notification when something is due.
+- Click a task's checkbox to cycle its status: **todo → in progress → done**. Filter by status with the All / Todo / Doing / Done tabs, **search** by text, or click any **#tag** to filter by it.
 - **Drag to reorder** the list; the order is saved.
 - Select a task and hit **Focus** to attach the timer to it — every completed work session adds a 🦆 to that task.
-- **Stats** shows today's completed sessions and total focus time, plus a per-task session history.
+- **Stats** shows today's totals, a **GitHub-style activity heatmap of the last 16 weeks**, week-over-week comparison, and per-task session history.
 
 ### A widget, not a window
 
-TaskMax is calculator-sized (380×600), frameless, and always on top. It docks itself to the bottom-right corner on startup, and you can drag it anywhere by its titlebar. Closing it (✕) hides it to the **system tray** — left-click the duck in the tray to bring it back, right-click for Show / Quit. (Set `minimize_to_tray: false` if you'd rather ✕ quit outright.)
+TaskMax is calculator-sized (380×600), frameless, and always on top. It remembers where you left it (first run docks bottom-right), and you can drag it anywhere by its titlebar. Closing it (✕) hides it to the **system tray** — left-click the duck in the tray to bring it back, right-click for Show / Quit. (Set `minimize_to_tray: false` if you'd rather ✕ quit outright.)
+
+- **`Ctrl+Alt+D`** summons or hides the widget from anywhere (Windows).
+- **Mini mode** (❐ in the titlebar) collapses it to just the timer ring.
+- **Launch on startup** — toggle in Settings to start TaskMax with Windows.
 
 ### Make it yours
 
@@ -144,8 +149,9 @@ Use the **Test connection** button in Settings to validate a DSN before saving. 
 - [ ] Code-signing the release binaries (currently unsigned → SmartScreen/Gatekeeper warnings)
 - [x] Single-instance guard — launching the app again just brings the existing widget back
 - [x] Remember the window position between restarts
+- [x] Auto-set a task to "in progress" when you start focusing on it
 - [ ] Tray icon that matches the chosen accent
-- [ ] Auto-set a task to "in progress" when you start focusing on it
+- [ ] winget distribution and data export/backup
 
 ---
 

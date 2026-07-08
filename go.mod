@@ -8,6 +8,8 @@ require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/spf13/viper v1.19.0
 	github.com/wailsapp/wails/v2 v2.13.0
+	golang.design/x/hotkey v0.6.1
+	golang.org/x/sys v0.47.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.12
@@ -69,7 +71,6 @@ require (
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.54.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

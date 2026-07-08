@@ -1,12 +1,27 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import { TestConnection, GetAppVersion } from '../../wailsjs/go/main/App'
+  import {
+    TestConnection,
+    GetAppVersion,
+    GetLaunchOnStartup,
+    SetLaunchOnStartup
+  } from '../../wailsjs/go/main/App'
   import { ACCENTS, DEFAULT_ACCENT } from './accents.js'
 
   let version = ''
   $: if (open && !version) {
     GetAppVersion()
       .then((v) => (version = v))
+      .catch(() => {})
+  }
+
+  // Launch-on-startup lives in the OS (registry), not config.yaml.
+  let launchOnStartup = false
+  let launchLoaded = false
+  $: if (open && !launchLoaded) {
+    launchLoaded = true
+    GetLaunchOnStartup()
+      .then((v) => (launchOnStartup = v))
       .catch(() => {})
   }
 
@@ -32,10 +47,13 @@
 
   function close() {
     draft = null
+    launchLoaded = false
     dispatch('close')
   }
 
   function save() {
+    SetLaunchOnStartup(launchOnStartup).catch(() => {})
+    launchLoaded = false
     dispatch('save', draft)
     draft = null
   }
@@ -121,6 +139,14 @@
           <span class="slabel">Sessions before long break <b>{draft.pomodoro.sessions_before_long}</b></span>
           <input type="range" min="2" max="8" step="1" bind:value={draft.pomodoro.sessions_before_long} />
         </label>
+        <label class="slider">
+          <span class="slabel">Daily goal <b>{draft.pomodoro.daily_goal} sessions</b></span>
+          <input type="range" min="1" max="16" step="1" bind:value={draft.pomodoro.daily_goal} />
+        </label>
+        <label class="switch">
+          <input type="checkbox" bind:checked={draft.pomodoro.sound} />
+          <span>Chime when a session ends</span>
+        </label>
       </section>
 
       <!-- Appearance -->
@@ -155,6 +181,10 @@
         <label class="switch">
           <input type="checkbox" bind:checked={draft.app.minimize_to_tray} />
           <span>Hide window on close (minimize to tray)</span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" bind:checked={launchOnStartup} />
+          <span>Launch TaskMax when Windows starts</span>
         </label>
       </section>
     </div>
@@ -298,6 +328,7 @@
     color: var(--text);
     font-size: 0.85rem;
     cursor: pointer;
+    margin-bottom: 0.6rem;
   }
   .switch input {
     width: auto;

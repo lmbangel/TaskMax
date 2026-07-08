@@ -17,6 +17,10 @@ export function GetAppVersion():Promise<string>;
 
 export function GetConfig():Promise<config.Config>;
 
+export function GetDailyActivity(arg1:number):Promise<Array<services.DailyActivity>>;
+
+export function GetLaunchOnStartup():Promise<boolean>;
+
 export function GetSessionsForTask(arg1:number):Promise<Array<models.PomodoroSession>>;
 
 export function GetTasksByStatus(arg1:string):Promise<Array<models.Task>>;
@@ -25,11 +29,15 @@ export function GetTimerState():Promise<services.TimerState>;
 
 export function GetTodayStats():Promise<services.PomodoroStats>;
 
+export function HideToTray():Promise<void>;
+
 export function ReorderTasks(arg1:Array<number>):Promise<void>;
 
 export function SaveConfig(arg1:config.Config):Promise<void>;
 
 export function SaveWindowPosition():Promise<void>;
+
+export function SetLaunchOnStartup(arg1:boolean):Promise<void>;
 
 export function StartPomodoro(arg1:number,arg2:string):Promise<void>;
 

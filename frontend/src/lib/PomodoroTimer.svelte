@@ -1,12 +1,17 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { timer } from '../stores/timer.js'
+  import { tasks } from '../stores/tasks.js'
   import { mascot } from '../stores/appearance.js'
   import { StartPomodoro, StopPomodoro } from '../../wailsjs/go/main/App'
   import { EventsOn, EventsOff } from '../../wailsjs/runtime/runtime'
 
   export let task = null // currently selected task (or null)
   export let config = null // app config, for session durations
+  export let doneToday = 0 // completed work sessions today (for the goal row)
+  export let mini = false // compact ring-only rendering
+
+  $: goal = config?.pomodoro?.daily_goal || 0
 
   // Work sessions use the accent mascot as their icon (see accents.js).
   const MODES = {
@@ -46,6 +51,7 @@
   async function start() {
     await StartPomodoro(activeTaskID, state.session_type || 'work')
     timer.poll()
+    tasks.refresh() // focusing may have moved the task to "in progress"
   }
 
   async function pause() {
@@ -78,7 +84,7 @@
   })
 </script>
 
-<div class="timer card">
+<div class="timer card" class:mini>
   <div class="mode" style="--mode-color: {mode.color}">
     <span class="icon">{mode.icon || $mascot}</span>
     <span class="label">{mode.label}</span>
@@ -131,6 +137,17 @@
     {/if}
     <button class="btn btn-ghost" on:click={skip}>⏭ Skip</button>
   </div>
+
+  {#if !mini && goal > 0}
+    <div class="goal" class:goal-met={doneToday >= goal}>
+      <div class="goal-text">
+        {$mascot} {doneToday}/{goal} today{doneToday >= goal ? ' — goal met!' : ''}
+      </div>
+      <div class="goal-bar">
+        <div class="goal-fill" style="width: {Math.min(100, (doneToday / goal) * 100)}%"></div>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -204,5 +221,55 @@
     min-width: 96px;
     padding: 0.6rem 0.9rem;
     font-size: 0.85rem;
+  }
+
+  /* ----- Daily goal ----- */
+  .goal {
+    width: 100%;
+    max-width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .goal-text {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .goal-met .goal-text {
+    color: var(--success);
+  }
+  .goal-bar {
+    height: 5px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .goal-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+  .goal-met .goal-fill {
+    background: var(--success);
+  }
+
+  /* ----- Mini mode ----- */
+  .timer.mini {
+    gap: 0.5rem;
+    padding: 0.5rem 0.5rem 0.75rem;
+    box-shadow: none;
+    background: transparent;
+  }
+  .timer.mini .mode {
+    padding: 0.25rem 0.7rem;
+    font-size: 0.72rem;
+  }
+  .timer.mini .controls .btn {
+    min-width: 80px;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.78rem;
   }
 </style>

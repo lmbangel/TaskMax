@@ -15,6 +15,7 @@ type Task struct {
 	Status        string     `json:"status"`   // "todo", "in_progress", "done"
 	Tags          string     `json:"tags"`     // comma-separated
 	DueDate       *time.Time `json:"due_date"`
+	Recurrence    string     `json:"recurrence"`     // "", "daily", "weekly", "monthly"
 	PomodoroCount int        `json:"pomodoro_count"` // how many work sessions logged against it
 	Position      int        `json:"position"`       // manual sort order for drag-to-reorder
 }

@@ -37,6 +37,8 @@ export namespace config {
 	    short_break: number;
 	    long_break: number;
 	    sessions_before_long: number;
+	    daily_goal: number;
+	    sound: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new PomodoroConfig(source);
@@ -48,6 +50,8 @@ export namespace config {
 	        this.short_break = source["short_break"];
 	        this.long_break = source["long_break"];
 	        this.sessions_before_long = source["sessions_before_long"];
+	        this.daily_goal = source["daily_goal"];
+	        this.sound = source["sound"];
 	    }
 	}
 	export class DatabaseConfig {
@@ -198,6 +202,7 @@ export namespace models {
 	    tags: string;
 	    // Go type: time
 	    due_date?: any;
+	    recurrence: string;
 	    pomodoro_count: number;
 	    position: number;
 	
@@ -217,6 +222,7 @@ export namespace models {
 	        this.status = source["status"];
 	        this.tags = source["tags"];
 	        this.due_date = this.convertValues(source["due_date"], null);
+	        this.recurrence = source["recurrence"];
 	        this.pomodoro_count = source["pomodoro_count"];
 	        this.position = source["position"];
 	    }
@@ -244,6 +250,22 @@ export namespace models {
 
 export namespace services {
 	
+	export class DailyActivity {
+	    date: string;
+	    count: number;
+	    minutes: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new DailyActivity(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.date = source["date"];
+	        this.count = source["count"];
+	        this.minutes = source["minutes"];
+	    }
+	}
 	export class PomodoroStats {
 	    sessions_completed: number;
 	    work_sessions: number;

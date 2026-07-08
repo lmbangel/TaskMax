@@ -26,6 +26,14 @@ export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
 
+export function GetDailyActivity(arg1) {
+  return window['go']['main']['App']['GetDailyActivity'](arg1);
+}
+
+export function GetLaunchOnStartup() {
+  return window['go']['main']['App']['GetLaunchOnStartup']();
+}
+
 export function GetSessionsForTask(arg1) {
   return window['go']['main']['App']['GetSessionsForTask'](arg1);
 }
@@ -42,6 +50,10 @@ export function GetTodayStats() {
   return window['go']['main']['App']['GetTodayStats']();
 }
 
+export function HideToTray() {
+  return window['go']['main']['App']['HideToTray']();
+}
+
 export function ReorderTasks(arg1) {
   return window['go']['main']['App']['ReorderTasks'](arg1);
 }
@@ -52,6 +64,10 @@ export function SaveConfig(arg1) {
 
 export function SaveWindowPosition() {
   return window['go']['main']['App']['SaveWindowPosition']();
+}
+
+export function SetLaunchOnStartup(arg1) {
+  return window['go']['main']['App']['SetLaunchOnStartup'](arg1);
 }
 
 export function StartPomodoro(arg1, arg2) {

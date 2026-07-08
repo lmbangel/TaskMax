@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -58,13 +59,23 @@ func (s *TaskService) Create(task models.Task) (models.Task, error) {
 
 // Update saves changes to an existing task. Select all fields so that clearing
 // a value (e.g. removing a due date) is persisted.
+//
+// Completing a recurring task does not park it in "done": the task springs
+// back to "todo" with its due date advanced to the next occurrence.
 func (s *TaskService) Update(task models.Task) (models.Task, error) {
 	if task.ID == 0 {
 		return models.Task{}, errors.New("task id is required for update")
 	}
+
+	if task.Status == "done" && task.Recurrence != "" {
+		task.Status = "todo"
+		next := nextOccurrence(task.DueDate, task.Recurrence)
+		task.DueDate = &next
+	}
+
 	err := s.db.Model(&models.Task{}).
 		Where("id = ?", task.ID).
-		Select("title", "description", "priority", "status", "tags", "due_date", "position").
+		Select("title", "description", "priority", "status", "tags", "due_date", "recurrence", "position").
 		Updates(map[string]interface{}{
 			"title":       task.Title,
 			"description": task.Description,
@@ -72,6 +83,7 @@ func (s *TaskService) Update(task models.Task) (models.Task, error) {
 			"status":      task.Status,
 			"tags":        task.Tags,
 			"due_date":    task.DueDate,
+			"recurrence":  task.Recurrence,
 			"position":    task.Position,
 		}).Error
 	if err != nil {
@@ -83,6 +95,40 @@ func (s *TaskService) Update(task models.Task) (models.Task, error) {
 		return models.Task{}, err
 	}
 	return updated, nil
+}
+
+// nextOccurrence advances a due date by the recurrence interval until it lies
+// in the future. A task with no due date recurs from today.
+func nextOccurrence(due *time.Time, recurrence string) time.Time {
+	now := time.Now()
+	next := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	if due != nil {
+		next = *due
+	}
+	for !next.After(now) {
+		switch recurrence {
+		case "daily":
+			next = next.AddDate(0, 0, 1)
+		case "weekly":
+			next = next.AddDate(0, 0, 7)
+		case "monthly":
+			next = next.AddDate(0, 1, 0)
+		default:
+			return next
+		}
+	}
+	return next
+}
+
+// SetInProgressIfTodo flips a task from "todo" to "in_progress" — used when a
+// focus session starts on it, so the Doing tab reflects reality.
+func (s *TaskService) SetInProgressIfTodo(id uint) error {
+	if id == 0 {
+		return nil
+	}
+	return s.db.Model(&models.Task{}).
+		Where("id = ? AND status = ?", id, "todo").
+		Update("status", "in_progress").Error
 }
 
 // Delete removes a task and its associated pomodoro sessions.
