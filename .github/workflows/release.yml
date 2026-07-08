@@ -27,6 +27,8 @@ jobs:
           node-version: 20
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
+      - name: Install NSIS
+        run: choco install nsis -y
       - name: Build portable exe + NSIS installer
         run: wails build -platform windows/amd64 -nsis
       - name: Stage artifacts
