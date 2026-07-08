@@ -11,6 +11,8 @@ export function CreateTask(arg1:models.Task):Promise<models.Task>;
 
 export function DeleteTask(arg1:number):Promise<void>;
 
+export function ExportData():Promise<string>;
+
 export function GetAllTasks():Promise<Array<models.Task>>;
 
 export function GetAppVersion():Promise<string>;
@@ -30,6 +32,8 @@ export function GetTimerState():Promise<services.TimerState>;
 export function GetTodayStats():Promise<services.PomodoroStats>;
 
 export function HideToTray():Promise<void>;
+
+export function ImportData(arg1:string):Promise<services.ImportResult>;
 
 export function ReorderTasks(arg1:Array<number>):Promise<void>;
 

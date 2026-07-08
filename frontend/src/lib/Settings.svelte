@@ -4,7 +4,9 @@
     TestConnection,
     GetAppVersion,
     GetLaunchOnStartup,
-    SetLaunchOnStartup
+    SetLaunchOnStartup,
+    ExportData,
+    ImportData
   } from '../../wailsjs/go/main/App'
   import { ACCENTS, DEFAULT_ACCENT } from './accents.js'
 
@@ -64,6 +66,44 @@
     launchLoaded = false
     dispatch('save', draft)
     draft = null
+  }
+
+  // ----- Data export / import -----
+  let dataState = 'idle' // idle | busy | ok | fail
+  let dataMsg = ''
+
+  async function doExport() {
+    dataState = 'busy'
+    dataMsg = ''
+    try {
+      const path = await ExportData()
+      if (path) {
+        dataState = 'ok'
+        dataMsg = `Exported to ${path}`
+      } else {
+        dataState = 'idle' // dialog cancelled
+      }
+    } catch (e) {
+      dataState = 'fail'
+      dataMsg = (e && e.message) || String(e)
+    }
+  }
+
+  async function doImport(mode) {
+    dataState = 'busy'
+    dataMsg = ''
+    try {
+      const res = await ImportData(mode)
+      if (res.canceled) {
+        dataState = 'idle'
+      } else {
+        dataState = 'ok'
+        dataMsg = `Imported ${res.tasks_imported} tasks and ${res.sessions_imported} sessions`
+      }
+    } catch (e) {
+      dataState = 'fail'
+      dataMsg = (e && e.message) || String(e)
+    }
   }
 
   async function testConnection() {
@@ -196,6 +236,31 @@
         </label>
       </section>
 
+      <!-- Data -->
+      <section>
+        <h3>Data</h3>
+        <div class="data-row">
+          <button class="btn" on:click={doExport} disabled={dataState === 'busy'}>
+            ⬇ Export…
+          </button>
+          <button class="btn" on:click={() => doImport('merge')} disabled={dataState === 'busy'}>
+            ⬆ Import…
+          </button>
+          <button class="btn" on:click={() => doImport('replace')} disabled={dataState === 'busy'}>
+            ♻ Restore…
+          </button>
+        </div>
+        {#if dataState === 'ok'}
+          <p class="test ok data-msg">✓ {dataMsg}</p>
+        {:else if dataState === 'fail'}
+          <p class="test fail data-msg">✕ {dataMsg}</p>
+        {/if}
+        <p class="note">
+          Export saves all tasks and session history to a JSON file.
+          Import adds a backup's tasks to the board; Restore replaces everything with the backup.
+        </p>
+      </section>
+
       <!-- Agents -->
       <section>
         <h3>Agents (MCP)</h3>
@@ -291,6 +356,20 @@
   }
   .test.fail {
     color: var(--danger);
+  }
+  .data-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .data-row .btn {
+    flex: 1;
+    padding: 0.5rem 0.4rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+  .data-msg {
+    margin: 0.5rem 0 0;
+    word-break: break-all;
   }
   .note {
     font-size: 0.72rem;

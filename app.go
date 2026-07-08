@@ -32,6 +32,7 @@ type App struct {
 	db       *gorm.DB
 	tasks    *services.TaskService
 	pomodoro *services.PomodoroService
+	backup   *services.BackupService
 
 	visMu  sync.Mutex
 	hidden bool // window hidden to the tray (tracked for the global hotkey)
@@ -47,6 +48,7 @@ func NewApp(cfg *config.Config, cfgPath string, gdb *gorm.DB) *App {
 		db:       gdb,
 		tasks:    services.NewTaskService(gdb),
 		pomodoro: services.NewPomodoroService(gdb, cfg),
+		backup:   services.NewBackupService(gdb),
 	}
 }
 
