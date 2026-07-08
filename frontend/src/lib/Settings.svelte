@@ -46,6 +46,13 @@
     testMsg = ''
   }
 
+  // Saving updates `config` while the panel is still open, which reseeds the
+  // draft above; if that draft survived the close, the next open would show
+  // (and re-save) stale values. Always drop it once the panel is closed.
+  $: if (!open && draft) {
+    draft = null
+  }
+
   function close() {
     draft = null
     launchLoaded = false

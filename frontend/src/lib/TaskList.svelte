@@ -29,16 +29,28 @@
     return t.due_date ? String(t.due_date).slice(5, 10) : ''
   }
 
+  // Due dates are calendar days (stored as midnight UTC of the picked date),
+  // so compare the stored date PART against today's LOCAL date. Round-tripping
+  // through Date/UTC shifts the day near midnight depending on the timezone.
+  function todayLocal() {
+    const d = new Date()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${d.getFullYear()}-${m}-${day}`
+  }
+
+  function dueDay(t) {
+    return String(t.due_date).slice(0, 10)
+  }
+
   function isOverdue(t) {
     if (!t.due_date || t.status === 'done') return false
-    const today = new Date()
-    today.setHours(23, 59, 59, 999)
-    return new Date(t.due_date) < today && !isDueToday(t)
+    return dueDay(t) < todayLocal()
   }
 
   function isDueToday(t) {
-    if (!t.due_date) return false
-    return String(t.due_date).slice(0, 10) === new Date().toISOString().slice(0, 10)
+    if (!t.due_date || t.status === 'done') return false
+    return dueDay(t) === todayLocal()
   }
 
   function clickTag(tag, e) {
