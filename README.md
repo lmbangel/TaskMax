@@ -5,14 +5,43 @@ A cute, compact **desk widget for tasks and Pomodoro focus sessions — built fo
 > Why a duck? Every software engineer needs a [rubber duck](https://en.wikipedia.org/wiki/Rubber_duck_debugging) on their desk. The Pomodoro technique's tomato lives on as an optional accent theme.
 
 <p align="center">
-  <img src="docs/screenshots/focus.png" width="300" alt="TaskMax focus timer" />
+  <img src="docs/screenshots/mcp-demo.gif" width="320" alt="A coding agent creating, focusing on, and completing a task through the MCP server while the TaskMax widget updates live" /><br/>
+  <em>A Claude Code session logging, focusing on, and completing a task over MCP — no screen control, the human keeps the mouse. Agent tasks get the 🤖 marker.</em>
 </p>
 
 ---
 
 ## ✨ What it does
 
+### Your agents' task board 🤖
+
+TaskMax ships an **embedded MCP server**, so coding agents — Claude Code (CLI, VS Code, desktop app), Cursor, or any MCP client — manage your board **without touching your screen**. Agents log their work in the background while you keep working; the widget updates live, and agent-created tasks carry a 🤖 marker so you always know who did what. Multiple agent sessions can connect at once.
+
+Connect Claude Code once:
+
+```bash
+claude mcp add --scope user --transport http taskmax http://localhost:7823/mcp
+```
+
+or per-project in `.mcp.json` (commit it, and every clone auto-connects):
+
+```json
+{
+  "mcpServers": {
+    "taskmax": { "type": "http", "url": "http://localhost:7823/mcp" }
+  }
+}
+```
+
+Agents get ten tools: `create_task`, `list_tasks`, `update_task`, `complete_task`, `delete_task`, `start_pomodoro`, `stop_pomodoro`, `get_timer_state`, `get_today_stats`, `get_activity`. Typical prompts: *"log what we just shipped and mark it done"*, *"what's on my board for today?"*, *"start a pomodoro on the auth refactor"*.
+
+The server listens on **localhost only** (default port 7823) and runs inside the TaskMax process — one data owner, many concurrent agent sessions. Toggle it under ⚙ Settings → Agents.
+
 ### Focus timer
+
+<p align="center">
+  <img src="docs/screenshots/focus.png" width="280" alt="TaskMax focus timer with daily goal" />
+</p>
 
 A classic Pomodoro cycle: 25-minute work sessions, short breaks, and a long break every 4 sessions (all adjustable). The countdown runs in Go, so it keeps ticking even when the UI is hidden. When a session ends you get a desktop notification and a soft chime (mutable in Settings), and the app rolls into the next session automatically. Completed sessions are counted against the task you were focusing on — and starting a session on a todo task automatically moves it to **In Progress**. A **daily goal** (default 8 sessions) shows as a progress bar under the timer.
 
@@ -36,30 +65,6 @@ TaskMax is calculator-sized (380×600), frameless, and always on top. It remembe
 - **`Ctrl+Alt+D`** summons or hides the widget from anywhere (Windows).
 - **Mini mode** (❐ in the titlebar) collapses it to just the timer ring.
 - **Launch on startup** — toggle in Settings to start TaskMax with Windows.
-
-### Built for agentic coding 🤖
-
-TaskMax ships an **embedded MCP server**, so coding agents — Claude Code (CLI, VS Code, desktop app), Cursor, or any MCP client — can manage your board **without touching your screen**. You keep the mouse; agents log their work in the background, and the widget updates live. Agent-created tasks carry a 🤖 marker.
-
-Connect Claude Code once:
-
-```bash
-claude mcp add --transport http taskmax http://localhost:7823/mcp
-```
-
-or per-project in `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "taskmax": { "type": "http", "url": "http://localhost:7823/mcp" }
-  }
-}
-```
-
-Agents get ten tools: `create_task`, `list_tasks`, `update_task`, `complete_task`, `delete_task`, `start_pomodoro`, `stop_pomodoro`, `get_timer_state`, `get_today_stats`, `get_activity`. Typical prompts: *"log what we just shipped and mark it done"*, *"what's on my board for today?"*, *"start a pomodoro on the auth refactor"*.
-
-The server listens on **localhost only** (default port 7823) and runs inside the TaskMax process — one data owner, many concurrent agent sessions. Toggle it under ⚙ Settings → Agents.
 
 ### Make it yours
 

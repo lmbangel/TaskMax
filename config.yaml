@@ -1,10 +1,13 @@
 app:
-    accent: tomato
+    accent: orange
     minimize_to_tray: true
-    theme: cosy
+    theme: dark
 database:
     dsn: tasks.db
     type: sqlite
+mcp:
+    enabled: true
+    port: 7823
 pomodoro:
     daily_goal: 8
     long_break: 15
@@ -14,5 +17,5 @@ pomodoro:
     work_duration: 25
 window:
     saved: true
-    x: 1779
-    "y": 393
+    x: 0
+    "y": 0
