@@ -5,6 +5,8 @@ import {models} from '../models';
 import {config} from '../models';
 import {services} from '../models';
 
+export function ApplyUpdate():Promise<void>;
+
 export function CheckForUpdate():Promise<main.UpdateInfo>;
 
 export function CreateTask(arg1:models.Task):Promise<models.Task>;

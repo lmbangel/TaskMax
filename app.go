@@ -61,6 +61,7 @@ func (a *App) startup(ctx context.Context) {
 	a.registerHotkey()
 	a.startMCP()
 	go a.dueReminderLoop()
+	go cleanupUpdateArtifacts()
 }
 
 // parseDueDate accepts a YYYY-MM-DD date for task due dates.

@@ -15,6 +15,7 @@
     GetTodayStats,
     GetSessionsForTask,
     CheckForUpdate,
+    ApplyUpdate,
     HideToTray
   } from '../wailsjs/go/main/App'
   import {
@@ -190,6 +191,25 @@
 
   // ----- Update check -----
   let update = null // UpdateInfo from Go when a newer release exists
+  let updating = null // { phase, percent } while ApplyUpdate runs
+  let updateFailed = false
+
+  async function getUpdate() {
+    if (!update) return
+    // No in-place support on this platform (or a previous attempt failed):
+    // fall back to the releases page.
+    if (!update.can_self_update || updateFailed) {
+      BrowserOpenURL(update.url)
+      return
+    }
+    updating = { phase: 'downloading', percent: 0 }
+    try {
+      await ApplyUpdate() // on success the app restarts underneath us
+    } catch (e) {
+      updating = null
+      updateFailed = true
+    }
+  }
 
   async function checkForUpdate() {
     try {
@@ -234,6 +254,11 @@
       loadStats()
     })
 
+    // Self-update progress while ApplyUpdate downloads and installs.
+    EventsOn('update:progress', (p) => {
+      updating = p
+    })
+
     statsInterval = setInterval(loadStats, 30000)
 
     checkForUpdate()
@@ -243,6 +268,7 @@
   onDestroy(() => {
     EventsOff('pomodoro:complete')
     EventsOff('tasks:changed')
+    EventsOff('update:progress')
     if (statsInterval) clearInterval(statsInterval)
     if (updateInterval) clearInterval(updateInterval)
     timer.stop()
@@ -274,9 +300,29 @@
 
   {#if update}
     <div class="update-banner">
-      <span class="ub-text">{update.latest_version} is available</span>
-      <button class="ub-get" on:click={() => BrowserOpenURL(update.url)}>Get update</button>
-      <button class="ub-close" title="Dismiss" on:click={dismissUpdate}>✕</button>
+      {#if updating}
+        <span class="ub-text">
+          {#if updating.phase === 'downloading'}
+            Downloading {update.latest_version}… {updating.percent}%
+          {:else if updating.phase === 'installing'}
+            Installing…
+          {:else}
+            Restarting…
+          {/if}
+        </span>
+      {:else}
+        <span class="ub-text">
+          {#if updateFailed}
+            Update failed — get it manually
+          {:else}
+            {update.latest_version} is available
+          {/if}
+        </span>
+        <button class="ub-get" on:click={getUpdate}>
+          {updateFailed ? 'Open page' : update.can_self_update ? 'Update now' : 'Get update'}
+        </button>
+        <button class="ub-close" title="Dismiss" on:click={dismissUpdate}>✕</button>
+      {/if}
     </div>
   {/if}
 
