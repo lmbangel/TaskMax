@@ -1,10 +1,13 @@
 package main
 
 import (
+	"crypto/sha256"
 	"embed"
+	"encoding/hex"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -43,6 +46,19 @@ func dataDir() string {
 		return "."
 	}
 	return dir
+}
+
+// instanceLockID scopes the single-instance guard to the data directory:
+// two processes sharing one config/database (e.g. double-launching the
+// installed app) are collapsed into one, while a dev checkout and an
+// installed copy — which use different data dirs — may run side by side.
+func instanceLockID(dir string) string {
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		abs = dir
+	}
+	sum := sha256.Sum256([]byte(strings.ToLower(filepath.Clean(abs))))
+	return "taskmax-" + hex.EncodeToString(sum[:8])
 }
 
 func main() {
@@ -89,6 +105,10 @@ func main() {
 		},
 		BackgroundColour:  &options.RGBA{R: 28, G: 27, B: 25, A: 1},
 		HideWindowOnClose: cfg.App.MinimizeToTray,
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               instanceLockID(dir),
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
 		OnStartup:         app.startup,
 		OnShutdown:        app.shutdown,
 		Bind: []interface{}{

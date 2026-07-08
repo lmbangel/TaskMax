@@ -4,6 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/energye/systray"
+	"github.com/wailsapp/wails/v2/pkg/options"
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -35,6 +36,13 @@ func (a *App) trayReady() {
 func (a *App) showWindow() {
 	wailsruntime.WindowShow(a.ctx)
 	wailsruntime.WindowUnminimise(a.ctx)
+}
+
+// onSecondInstanceLaunch runs in the surviving instance when someone starts
+// the app a second time: instead of a duplicate widget, the existing one
+// comes back into view.
+func (a *App) onSecondInstanceLaunch(_ options.SecondInstanceData) {
+	a.showWindow()
 }
 
 // stopTray removes the tray icon; called from the app's shutdown hook.
