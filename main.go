@@ -3,6 +3,8 @@ package main
 import (
 	"embed"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -15,15 +17,51 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// dataDir decides where config.yaml and the sqlite database live.
+//
+// Portable mode: if a config.yaml already sits in the working directory or
+// next to the executable (dev checkouts, portable exe, USB stick), keep
+// using that directory. Otherwise fall back to the per-user config dir
+// (%AppData%\TaskMax on Windows) — an installed copy under Program Files
+// must never write beside its own binary.
+func dataDir() string {
+	if _, err := os.Stat("config.yaml"); err == nil {
+		return "."
+	}
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		if _, err := os.Stat(filepath.Join(exeDir, "config.yaml")); err == nil {
+			return exeDir
+		}
+	}
+	base, err := os.UserConfigDir()
+	if err != nil {
+		return "."
+	}
+	dir := filepath.Join(base, "TaskMax")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "."
+	}
+	return dir
+}
+
 func main() {
-	const cfgPath = "config.yaml"
+	dir := dataDir()
+	cfgPath := filepath.Join(dir, "config.yaml")
 
 	cfg, err := config.Load(cfgPath)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	database, err := db.NewDB(cfg)
+	// Resolve a relative sqlite path inside the data dir without touching the
+	// config we bind and save — the file keeps its portable relative DSN.
+	dbCfg := *cfg
+	if dbCfg.Database.Type == "sqlite" && !filepath.IsAbs(dbCfg.Database.DSN) {
+		dbCfg.Database.DSN = filepath.Join(dir, dbCfg.Database.DSN)
+	}
+
+	database, err := db.NewDB(&dbCfg)
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}

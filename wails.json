@@ -8,5 +8,12 @@
   "frontend:dev:serverUrl": "http://localhost:5173",
   "author": {
     "name": "TaskMax"
+  },
+  "info": {
+    "companyName": "TaskMax",
+    "productName": "TaskMax",
+    "productVersion": "0.1.1",
+    "copyright": "MIT License",
+    "comments": "Cute task + Pomodoro desk widget"
   }
 }

@@ -93,7 +93,12 @@ Releases are built automatically by GitHub Actions whenever a version tag is pus
 
 ## ⚙️ Configuration
 
-Settings live in `config.yaml` next to the binary (created automatically on first run). Everything here is also editable from the in-app **⚙ Settings** panel, which rewrites this file when you save.
+Settings live in `config.yaml`, created automatically on first run. Where it (and the SQLite database) lives depends on how you run TaskMax:
+
+- **Installed** — `%AppData%\TaskMax` on Windows (`~/.config/TaskMax` on Linux, `~/Library/Application Support/TaskMax` on macOS). Program Files stays read-only, as it should.
+- **Portable / dev checkout** — if a `config.yaml` already exists in the working directory or next to the executable, TaskMax uses that directory instead. Data travels with the binary.
+
+Everything here is also editable from the in-app **⚙ Settings** panel, which rewrites this file when you save.
 
 ```yaml
 app:
