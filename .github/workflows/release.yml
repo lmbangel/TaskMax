@@ -28,12 +28,19 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
       - name: Install NSIS
-        run: choco install nsis -y
+        shell: pwsh
+        run: |
+          choco install nsis -y
+          # choco updates the machine PATH, but job steps keep the PATH computed
+          # at job start — expose makensis to the build step explicitly.
+          Add-Content $env:GITHUB_PATH 'C:\Program Files (x86)\NSIS'
+          Add-Content $env:GITHUB_PATH 'C:\Program Files (x86)\NSIS\Bin'
       - name: Build portable exe + NSIS installer
         run: wails build -platform windows/amd64 -nsis
       - name: Stage artifacts
         shell: pwsh
         run: |
+          Get-ChildItem build/bin
           Copy-Item build/bin/TaskMax.exe TaskMax-windows-amd64-portable.exe
           Copy-Item build/bin/TaskMax-amd64-installer.exe TaskMax-windows-amd64-installer.exe
       - uses: actions/upload-artifact@v4
