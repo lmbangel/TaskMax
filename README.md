@@ -1,81 +1,51 @@
-# 🍅 TaskMax
+# 🦆 TaskMax
 
-A cosy, polished desktop **task manager with a built-in Pomodoro timer**, built with **Go + Wails v2 + Svelte**. Runs fully offline on a local SQLite database out of the box, and can connect to an external PostgreSQL or MySQL database via a simple config file.
+A cute, compact **desk widget for tasks and Pomodoro focus sessions**, built with Go + Wails + Svelte. It docks to the corner of your screen, stays on top while you work, and lives in your system tray when you close it. Fully offline on a local SQLite database out of the box — or point it at PostgreSQL/MySQL if you prefer.
 
----
+> Why a duck? Every software engineer needs a [rubber duck](https://en.wikipedia.org/wiki/Rubber_duck_debugging) on their desk. The Pomodoro technique's tomato lives on as an optional accent theme.
 
-## ✨ Features
-
-- **Task management** — create, edit, delete, and organise tasks with titles, descriptions, priorities, tags, and due dates.
-- **Drag-to-reorder** task list with inline status toggling (todo → in progress → done).
-- **Pomodoro timer** — a large circular countdown that tracks focused work against a selected task.
-- **Automatic cycle** — work → short break → work → … → long break, following your configured cadence.
-- **Desktop notifications** when a session completes, plus an in-app event so the UI auto-advances.
-- **Focus statistics** — today's completed sessions, total focus time, and per-task session history.
-- **Three cosy themes** — `cosy`, `dark`, and `light`, swappable live from Settings.
-- **Pluggable database** — SQLite by default; switch to PostgreSQL or MySQL with a "Test connection" button in Settings.
+<p align="center">
+  <img src="docs/screenshots/focus.png" width="300" alt="TaskMax focus timer" />
+</p>
 
 ---
 
-## 🧱 Tech Stack
+## ✨ What it does
 
-| Layer | Technology |
-|---|---|
-| Desktop framework | [Wails v2](https://wails.io) |
-| Frontend | Svelte 4 + Vite 5 |
-| Language | Go 1.22+ |
-| ORM | [GORM](https://gorm.io) |
-| Local DB | SQLite |
-| External DB | PostgreSQL / MySQL |
-| Notifications | [beeep](https://github.com/gen2brain/beeep) |
-| Config | [Viper](https://github.com/spf13/viper) (`config.yaml`) |
+### Focus timer
 
----
+A classic Pomodoro cycle: 25-minute work sessions, short breaks, and a long break every 4 sessions (all adjustable). The countdown runs in Go, so it keeps ticking even when the UI is hidden. When a session ends you get a desktop notification and the app rolls into the next session automatically. Completed sessions are counted against the task you were focusing on.
 
-## 📁 Project Structure
+### Task management
 
-```
-TaskMax/
-├── main.go                     # Wails entry point — embeds frontend, opens DB, runs the app
-├── app.go                      # App struct: methods bound to the Svelte frontend
-├── config.yaml                 # User config (DB, Pomodoro durations, theme)
-├── wails.json                  # Wails project config
-├── Makefile                    # setup / dev / build / check targets
-├── go.mod / go.sum
-│
-├── internal/
-│   ├── config/config.go        # Load & save config with Viper (creates defaults on first run)
-│   ├── db/db.go                # DB factory: returns a *gorm.DB for sqlite/postgres/mysql
-│   ├── models/
-│   │   ├── task.go             # Task model
-│   │   └── pomodoro.go         # PomodoroSession model
-│   └── services/
-│       ├── task_service.go     # Task CRUD + reordering
-│       └── pomodoro_service.go # Timer engine (goroutine + ticker + context), stats
-│
-└── frontend/                   # Svelte + Vite single-page app
-    ├── index.html
-    ├── vite.config.js
-    ├── package.json
-    ├── src/
-    │   ├── main.js
-    │   ├── style.css           # Theme tokens (CSS custom properties)
-    │   ├── App.svelte          # Three-panel layout
-    │   ├── lib/
-    │   │   ├── TaskList.svelte
-    │   │   ├── TaskForm.svelte
-    │   │   ├── PomodoroTimer.svelte
-    │   │   ├── Settings.svelte
-    │   │   └── StatsPanel.svelte
-    │   └── stores/
-    │       ├── tasks.js
-    │       └── timer.js
-    └── wailsjs/                # Auto-generated Go↔JS bindings (regenerated on build)
-```
+| Tasks | New task | Stats |
+|:--:|:--:|:--:|
+| ![Tasks](docs/screenshots/tasks.png) | ![New task](docs/screenshots/new-task.png) | ![Stats](docs/screenshots/stats.png) |
+
+- Tasks carry a **title, description, priority, due date, and tags**.
+- Click a task's checkbox to cycle its status: **todo → in progress → done**. Filter the list by status with the All / Todo / Doing / Done tabs.
+- **Drag to reorder** the list; the order is saved.
+- Select a task and hit **Focus** to attach the timer to it — every completed work session adds a 🦆 to that task.
+- **Stats** shows today's completed sessions and total focus time, plus a per-task session history.
+
+### A widget, not a window
+
+TaskMax is calculator-sized (380×600), frameless, and always on top. It docks itself to the bottom-right corner on startup, and you can drag it anywhere by its titlebar. Closing it (✕) hides it to the **system tray** — left-click the duck in the tray to bring it back, right-click for Show / Quit. (Set `minimize_to_tray: false` if you'd rather ✕ quit outright.)
+
+### Make it yours
+
+| Settings | Light mode | Tomato accent |
+|:--:|:--:|:--:|
+| ![Settings](docs/screenshots/settings.png) | ![Light mode](docs/screenshots/light-mode.png) | ![Tomato accent](docs/screenshots/accent-tomato.png) |
+
+Appearance is two independent choices in **⚙ Settings**:
+
+- **Mode** — `cosy` (warm dark), `dark` (neutral black), or `light` (clean paper).
+- **Accent** — `duck` 🦆, `tomato` 🍅, or `orange` 🍊. The accent sets the brand colour *and* the mascot used across the app.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Run it locally
 
 ### Prerequisites
 
@@ -83,80 +53,60 @@ TaskMax/
 - **Node.js** 18+ and npm
 - **Wails CLI** v2 — `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 - Platform webview:
-  - **Windows** — WebView2 (preinstalled on Windows 10/11)
+  - **Windows** — WebView2 (preinstalled on Windows 10/11). No C compiler needed — the SQLite driver is pure Go.
   - **macOS** — WebKit (built in)
-  - **Linux / WSL** — `libgtk-3-dev` and `libwebkit2gtk-4.0-dev` (see below)
+  - **Linux / WSL** — `libgtk-3-dev` and `libwebkit2gtk-4.0-dev` (see Linux notes)
 
-### Install dependencies
-
-```bash
-make setup          # installs the Wails CLI, Go modules, and npm packages
-```
-
-### Run in development (hot-reload)
+### Build and run
 
 ```bash
-make dev
+git clone https://github.com/lmbangel/TaskMax.git
+cd TaskMax
+
+make setup     # install the Wails CLI, Go modules, and npm packages
+make dev       # run with hot-reload (best for development)
+
+# or build a real binary:
+make build     # → ./build/bin/TaskMax.exe (Windows) / TaskMax (Linux/macOS)
+make run       # build, then launch
 ```
 
-This opens the app window and live-reloads on changes to Go or Svelte code.
+No `make`? The direct equivalents are `wails dev` and `wails build` from the repo root (run `npm install` inside `frontend/` first).
 
-### Build a distributable binary
+### Linux / WSL notes
 
-```bash
-make build          # output: ./build/bin/TaskMax (.exe on Windows, .app on macOS)
-make run            # build, then launch the binary
-```
+The Wails webview needs GTK + WebKit — install once with `make system-deps`. Distros shipping **webkit2gtk 4.0** (e.g. Ubuntu 22.04) need a build tag, which the Makefile adds automatically on Linux; for **webkit2gtk 4.1** use `make build WAILS_TAGS=webkit2_41`. On WSL, clone into the WSL filesystem (not `/mnt/c/...`) for a faster dev loop; the window is provided by WSLg on Windows 11.
 
----
+### Download & install
 
-## 🐧 Linux / WSL notes
-
-On Linux the Wails webview needs GTK + WebKit. Install them once:
-
-```bash
-make system-deps    # sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev …
-```
-
-If your distro ships **webkit2gtk 4.0** (e.g. Ubuntu 22.04), the build needs a matching tag. The Makefile adds it automatically on Linux:
-
-```bash
-wails build -tags webkit2_40      # done for you by `make build` / `make dev`
-```
-
-If you have **webkit2gtk 4.1**, override it:
-
-```bash
-make build WAILS_TAGS=webkit2_41
-```
-
-> **WSL tip:** running from the Windows-mounted `/mnt/c/...` path works but is slow (disk I/O + hot-reload). For a snappier dev loop, clone into the WSL-native filesystem (e.g. `~/TaskMax`). The GUI window is provided by **WSLg** on Windows 11.
+Not yet — an installable release (downloadable `.exe` installer) is on the roadmap below. For now, `make build` produces a portable binary you can pin to your taskbar.
 
 ---
 
 ## ⚙️ Configuration
 
-Settings live in `config.yaml` (created automatically on first run) and are also editable from the in-app **Settings** panel.
+Settings live in `config.yaml` next to the binary (created automatically on first run). Everything here is also editable from the in-app **⚙ Settings** panel, which rewrites this file when you save.
 
 ```yaml
-database:
-  type: sqlite          # sqlite | postgres | mysql
-  dsn: tasks.db         # file path for sqlite, connection string for others
-
-pomodoro:
-  work_duration: 25     # minutes
-  short_break: 5
-  long_break: 15
-  sessions_before_long: 4
-
 app:
-  theme: cosy           # cosy | dark | light
-  minimize_to_tray: true
+    accent: duck            # duck | tomato | orange
+    minimize_to_tray: true  # ✕ hides to the tray instead of quitting
+    theme: cosy             # cosy | dark | light
+database:
+    dsn: tasks.db           # file path for sqlite, connection string for others
+    type: sqlite            # sqlite | postgres | mysql
+pomodoro:
+    long_break: 15          # minutes
+    sessions_before_long: 4
+    short_break: 5
+    work_duration: 25
 ```
 
-### External databases
+## 🗄️ Database
 
-Switch `database.type` and provide a DSN:
+TaskMax stores tasks and Pomodoro session history in **SQLite by default** (`tasks.db`, created on first run) — zero setup, fully offline, and no C toolchain required (the driver is pure Go). Tables are auto-migrated on startup.
+
+To use an external database instead, switch `database.type` and provide a DSN:
 
 - **PostgreSQL**
   ```yaml
@@ -171,67 +121,17 @@ Switch `database.type` and provide a DSN:
     dsn: "taskmax:secret@tcp(127.0.0.1:3306)/taskmax?charset=utf8mb4&parseTime=True&loc=Local"
   ```
 
-Use the **Test connection** button in Settings to validate a DSN before saving. Changing the database driver takes effect after an app restart; tables are auto-migrated on startup.
+Use the **Test connection** button in Settings to validate a DSN before saving. Changing the database driver takes effect after an app restart.
 
 ---
 
-## 🛠️ Makefile Targets
+## 🗺️ Roadmap
 
-| Target | Description |
-|---|---|
-| `make setup` | Install Wails CLI + Go modules + npm packages |
-| `make system-deps` | *(Linux/WSL)* Install GTK + WebKit libraries |
-| `make dev` | Run with hot-reload |
-| `make build` | Build a production desktop binary |
-| `make build-debug` | Build with the debug console + devtools |
-| `make run` | Build, then launch the binary |
-| `make frontend` / `make frontend-dev` | Build / dev-serve the Svelte UI only |
-| `make check` | `go vet` + backend build + `go test` |
-| `make doctor` | Wails toolchain health check |
-| `make clean` / `make clean-all` | Remove build artifacts / node_modules |
-
----
-
-## 🏗️ Architecture
-
-- **`main.go`** loads config, opens the database via the `db` factory, auto-migrates the models, then hands an `*App` to Wails.
-- **`app.go`** is the binding surface. Every exported method is callable from Svelte as `window.go.main.App.MethodName()` (Wails generates typed wrappers in `frontend/wailsjs`).
-- **Services** hold the logic:
-  - `TaskService` — CRUD and drag-reorder persistence.
-  - `PomodoroService` — owns a countdown goroutine driven by a `time.Ticker`, cancellable via `context`. On completion it marks the session done, fires a desktop notification, emits the `pomodoro:complete` Wails event, and computes the next session in the cycle.
-- **Frontend** polls `GetTimerState()` once per second (the authoritative countdown lives in Go) and listens for `pomodoro:complete` to auto-advance and refresh stats.
-
-### Bound methods
-
-**Tasks:** `GetAllTasks`, `GetTasksByStatus`, `CreateTask`, `UpdateTask`, `DeleteTask`, `ReorderTasks`
-**Pomodoro:** `StartPomodoro`, `StopPomodoro`, `GetTimerState`, `GetSessionsForTask`, `GetTodayStats`
-**Config:** `GetConfig`, `SaveConfig`, `TestConnection`
-
-### Data models
-
-```go
-type Task struct {
-    gorm.Model
-    Title         string
-    Description   string
-    Priority      string      // "low" | "medium" | "high"
-    Status        string      // "todo" | "in_progress" | "done"
-    Tags          string      // comma-separated
-    DueDate       *time.Time
-    PomodoroCount int
-    Position      int         // manual sort order
-}
-
-type PomodoroSession struct {
-    gorm.Model
-    TaskID      uint
-    Type        string        // "work" | "short_break" | "long_break"
-    Duration    int           // minutes
-    Completed   bool
-    StartedAt   time.Time
-    CompletedAt *time.Time
-}
-```
+- [ ] **Downloadable installer** — packaged Windows installer (and ideally macOS/Linux builds) via Wails packaging, published as GitHub Releases
+- [ ] Single-instance guard (launching the exe twice currently opens two widgets)
+- [ ] Remember the window position between restarts
+- [ ] Tray icon that matches the chosen accent
+- [ ] Auto-set a task to "in progress" when you start focusing on it
 
 ---
 
