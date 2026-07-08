@@ -44,17 +44,17 @@
   </div>
 
   {#if task}
-    <h3 class="heading">History · {task.Title}</h3>
+    <h3 class="heading">History · {task.title}</h3>
     <div class="history">
       {#if sessions.length === 0}
         <p class="empty">No sessions logged yet.</p>
       {/if}
       {#each sessions as s}
         <div class="row card">
-          <span class="type">{TYPE_LABEL[s.Type] || s.Type}</span>
-          <span class="dur">{s.Duration}m</span>
-          <span class="when">{timeOf(s.StartedAt)}</span>
-          <span class="done">{s.Completed ? '✓' : '⋯'}</span>
+          <span class="type">{TYPE_LABEL[s.type] || s.type}</span>
+          <span class="dur">{s.duration}m</span>
+          <span class="when">{timeOf(s.started_at)}</span>
+          <span class="done">{s.completed ? '✓' : '⋯'}</span>
         </div>
       {/each}
     </div>

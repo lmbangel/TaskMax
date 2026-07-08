@@ -13,14 +13,17 @@
     long_break: { label: 'Long Break', icon: '🌿', color: 'var(--success)' }
   }
 
-  // Ring geometry.
-  const R = 120
+  // Ring geometry (compact widget size).
+  const R = 92
   const CIRC = 2 * Math.PI * R
 
   $: state = $timer
   $: mode = MODES[state.session_type] || MODES.work
   $: totalSeconds = totalFor(state.session_type)
-  $: fraction = totalSeconds > 0 ? Math.max(0, state.seconds_remaining / totalSeconds) : 0
+  // When idle (nothing started yet), show the full upcoming session length.
+  $: displaySeconds =
+    state.is_running || state.seconds_remaining > 0 ? state.seconds_remaining : totalSeconds
+  $: fraction = totalSeconds > 0 ? Math.max(0, displaySeconds / totalSeconds) : 0
   $: dashoffset = CIRC * (1 - fraction)
   $: activeTaskID = task ? task.ID : state.active_task_id || 0
 
@@ -80,35 +83,35 @@
   </div>
 
   <div class="ring-wrap">
-    <svg width="280" height="280" viewBox="0 0 280 280">
+    <svg width="216" height="216" viewBox="0 0 216 216">
       <circle
         class="track"
-        cx="140"
-        cy="140"
+        cx="108"
+        cy="108"
         r={R}
         fill="none"
         stroke="var(--surface-2)"
-        stroke-width="14"
+        stroke-width="12"
       />
       <circle
         class="progress"
-        cx="140"
-        cy="140"
+        cx="108"
+        cy="108"
         r={R}
         fill="none"
         stroke={mode.color}
-        stroke-width="14"
+        stroke-width="12"
         stroke-linecap="round"
         stroke-dasharray={CIRC}
         stroke-dashoffset={dashoffset}
-        transform="rotate(-90 140 140)"
+        transform="rotate(-90 108 108)"
       />
     </svg>
     <div class="readout">
-      <div class="time">{fmt(state.seconds_remaining)}</div>
+      <div class="time">{fmt(displaySeconds)}</div>
       <div class="sub">
         {#if task}
-          on <strong>{task.Title}</strong>
+          on <strong>{task.title}</strong>
         {:else}
           {state.is_running ? 'focusing' : 'ready'}
         {/if}
@@ -133,8 +136,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.25rem;
-    padding: 1.75rem 2rem 2rem;
+    gap: 0.9rem;
+    padding: 1.1rem 1rem 1.25rem;
   }
 
   .mode {
@@ -155,8 +158,8 @@
 
   .ring-wrap {
     position: relative;
-    width: 280px;
-    height: 280px;
+    width: 216px;
+    height: 216px;
   }
   .progress {
     transition: stroke-dashoffset 0.95s linear, stroke 0.3s ease;
@@ -173,16 +176,16 @@
     gap: 0.35rem;
   }
   .time {
-    font-size: 3.4rem;
+    font-size: 2.5rem;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
     color: var(--text);
   }
   .sub {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     color: var(--text-muted);
-    max-width: 200px;
+    max-width: 150px;
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -197,8 +200,8 @@
     gap: 0.75rem;
   }
   .controls .btn {
-    min-width: 108px;
-    padding: 0.7rem 1.1rem;
-    font-size: 0.9rem;
+    min-width: 96px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.85rem;
   }
 </style>

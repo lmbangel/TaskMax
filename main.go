@@ -33,12 +33,19 @@ func main() {
 
 	app := NewApp(cfg, cfgPath, database)
 
+	// Compact "desk widget" window: frameless, always on top, calculator-sized.
+	// It is positioned at the bottom-right of the screen on startup (see
+	// App.startup) and dragged via the custom titlebar in the frontend.
 	err = wails.Run(&options.App{
-		Title:  "TaskMax",
-		Width:  1200,
-		Height: 800,
-		MinWidth:  900,
-		MinHeight: 640,
+		Title:     "TaskMax",
+		Width:     windowWidth,
+		Height:    windowHeight,
+		MinWidth:  340,
+		MinHeight: 520,
+		MaxWidth:  460,
+		MaxHeight: 760,
+		Frameless:   true,
+		AlwaysOnTop: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

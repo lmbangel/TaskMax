@@ -1,9 +1,11 @@
 package db
 
 import (
+	// Pure-Go SQLite driver (no CGO), so the app builds on Windows without a
+	// C toolchain. API-compatible with gorm.io/driver/sqlite.
+	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 

@@ -19,11 +19,11 @@
   function seed(t) {
     if (t === lastSeeded) return
     lastSeeded = t
-    title = t?.Title || ''
-    description = t?.Description || ''
-    priority = t?.Priority || 'medium'
-    tags = t?.Tags || ''
-    dueDate = t?.DueDate ? String(t.DueDate).slice(0, 10) : ''
+    title = t?.title || ''
+    description = t?.description || ''
+    priority = t?.priority || 'medium'
+    tags = t?.tags || ''
+    dueDate = t?.due_date ? String(t.due_date).slice(0, 10) : ''
   }
 
   function close() {
@@ -35,15 +35,15 @@
     if (!title.trim()) return
     const payload = {
       ...(task || {}),
-      Title: title.trim(),
-      Description: description.trim(),
-      Priority: priority,
-      Tags: tags
+      title: title.trim(),
+      description: description.trim(),
+      priority: priority,
+      tags: tags
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean)
         .join(','),
-      DueDate: dueDate ? `${dueDate}T00:00:00Z` : null
+      due_date: dueDate ? `${dueDate}T00:00:00Z` : null
     }
     dispatch('save', payload)
     close()

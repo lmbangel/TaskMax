@@ -6,10 +6,18 @@ import (
 
 	"gorm.io/gorm"
 
+	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
+
 	"taskmax/internal/config"
 	"taskmax/internal/db"
 	"taskmax/internal/models"
 	"taskmax/internal/services"
+)
+
+// Widget window dimensions, shared with the wails.Run options in main.go.
+const (
+	windowWidth  = 380
+	windowHeight = 600
 )
 
 // App is the Wails-bound application struct. Every exported method here is
@@ -38,6 +46,33 @@ func NewApp(cfg *config.Config, cfgPath string, gdb *gorm.DB) *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.pomodoro.SetContext(ctx)
+	a.dockToBottomRight()
+}
+
+// dockToBottomRight parks the widget near the bottom-right corner of the
+// primary screen, just above the taskbar.
+func (a *App) dockToBottomRight() {
+	screens, err := wailsruntime.ScreenGetAll(a.ctx)
+	if err != nil || len(screens) == 0 {
+		return
+	}
+	screen := screens[0]
+	for _, s := range screens {
+		if s.IsPrimary {
+			screen = s
+			break
+		}
+	}
+	const marginX, marginY = 16, 72 // marginY leaves room for the taskbar
+	x := screen.Size.Width - windowWidth - marginX
+	y := screen.Size.Height - windowHeight - marginY
+	if x < 0 {
+		x = 0
+	}
+	if y < 0 {
+		y = 0
+	}
+	wailsruntime.WindowSetPosition(a.ctx, x, y)
 }
 
 // ----- Tasks -----

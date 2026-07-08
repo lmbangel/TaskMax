@@ -26,7 +26,7 @@
 
   function cycleStatus(task, e) {
     e.stopPropagation()
-    dispatch('statusChange', { ...task, Status: STATUS_CYCLE[task.Status] || 'todo' })
+    dispatch('statusChange', { ...task, status: STATUS_CYCLE[task.status] || 'todo' })
   }
 
   function onDragStart(i) {
@@ -68,7 +68,7 @@
     <div
       class="task"
       class:selected={task.ID === selectedId}
-      class:done={task.Status === 'done'}
+      class:done={task.status === 'done'}
       class:dragover={overIndex === i && dragIndex !== null}
       draggable="true"
       animate:flip={{ duration: 220 }}
@@ -83,26 +83,26 @@
     >
       <button
         class="status"
-        title={STATUS_META[task.Status]?.label}
-        style="--dot: {STATUS_META[task.Status]?.dot}"
+        title={STATUS_META[task.status]?.label}
+        style="--dot: {STATUS_META[task.status]?.dot}"
         on:click={(e) => cycleStatus(task, e)}
       >
-        {#if task.Status === 'done'}✓{/if}
+        {#if task.status === 'done'}✓{/if}
       </button>
 
       <div class="body">
         <div class="top">
-          <span class="title">{task.Title}</span>
-          <span class="badge {task.Priority}">{task.Priority}</span>
+          <span class="title">{task.title}</span>
+          <span class="badge {task.priority}">{task.priority}</span>
         </div>
 
-        {#if tagList(task.Tags).length || task.PomodoroCount > 0}
+        {#if tagList(task.tags).length || task.pomodoro_count > 0}
           <div class="meta">
-            {#each tagList(task.Tags) as tag}
+            {#each tagList(task.tags) as tag}
               <span class="chip">#{tag}</span>
             {/each}
-            {#if task.PomodoroCount > 0}
-              <span class="poms">🍅 {task.PomodoroCount}</span>
+            {#if task.pomodoro_count > 0}
+              <span class="poms">🍅 {task.pomodoro_count}</span>
             {/if}
           </div>
         {/if}
