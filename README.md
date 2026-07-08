@@ -79,7 +79,15 @@ The Wails webview needs GTK + WebKit — install once with `make system-deps`. D
 
 ### Download & install
 
-Not yet — an installable release (downloadable `.exe` installer) is on the roadmap below. For now, `make build` produces a portable binary you can pin to your taskbar.
+Grab the latest build from the [**Releases page**](https://github.com/lmbangel/TaskMax/releases):
+
+- **Windows** — `TaskMax-windows-amd64-installer.exe` (installer) or `...-portable.exe` (no install, just run)
+- **macOS** — `TaskMax-macos-universal.zip` (Intel + Apple Silicon)
+- **Linux** — `TaskMax-linux-amd64.tar.gz`
+
+> The binaries are unsigned, so Windows SmartScreen / macOS Gatekeeper will warn on first launch — choose "More info → Run anyway" (Windows) or right-click → Open (macOS).
+
+Releases are built automatically by GitHub Actions whenever a version tag is pushed (`git tag v0.2.0 && git push origin v0.2.0`).
 
 ---
 
@@ -127,7 +135,8 @@ Use the **Test connection** button in Settings to validate a DSN before saving. 
 
 ## 🗺️ Roadmap
 
-- [ ] **Downloadable installer** — packaged Windows installer (and ideally macOS/Linux builds) via Wails packaging, published as GitHub Releases
+- [x] **Downloadable installer** — Windows installer + macOS/Linux builds, published automatically as GitHub Releases on every version tag
+- [ ] Code-signing the release binaries (currently unsigned → SmartScreen/Gatekeeper warnings)
 - [ ] Single-instance guard (launching the exe twice currently opens two widgets)
 - [ ] Remember the window position between restarts
 - [ ] Tray icon that matches the chosen accent
