@@ -92,6 +92,11 @@ FunctionEnd
 Section
     !insertmacro wails.setShellContext
 
+    # Close a running TaskMax before writing files — otherwise the exe is
+    # locked and the installer fails with "Error opening file for writing".
+    nsExec::Exec 'taskkill /IM taskmax.exe /F'
+    Sleep 500
+
     !insertmacro wails.webview2runtime
 
     SetOutPath $INSTDIR
