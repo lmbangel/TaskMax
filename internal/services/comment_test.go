@@ -55,20 +55,6 @@ func TestAddCommentValidation(t *testing.T) {
 	}
 }
 
-func TestDeleteComment(t *testing.T) {
-	s := NewTaskService(newTestDB(t))
-	task := mustCreateTask(t, s, models.Task{Title: "t"})
-	c, _ := s.AddComment(task.ID, "to be removed", "", "")
-
-	if err := s.DeleteComment(c.ID); err != nil {
-		t.Fatalf("DeleteComment: %v", err)
-	}
-	comments, _ := s.CommentsForTask(task.ID)
-	if len(comments) != 0 {
-		t.Errorf("comments after delete = %d, want 0", len(comments))
-	}
-}
-
 func TestDeleteTaskCascadesComments(t *testing.T) {
 	db := newTestDB(t)
 	s := NewTaskService(db)

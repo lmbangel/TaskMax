@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import { GetComments, AddComment, DeleteComment } from '../../wailsjs/go/main/App'
+  import { GetComments, AddComment } from '../../wailsjs/go/main/App'
   import { EventsOn, EventsOff } from '../../wailsjs/runtime/runtime'
 
   export let taskId = 0
@@ -32,11 +32,6 @@
     } finally {
       busy = false
     }
-  }
-
-  async function remove(id) {
-    await DeleteComment(id)
-    await load(taskId)
   }
 
   function who(c) {
@@ -76,7 +71,6 @@
             <div class="meta">
               <span class="who">{who(c)}</span>
               <span class="ts">{when(c)}</span>
-              <button class="del" title="Delete comment" on:click={() => remove(c.ID)}>✕</button>
             </div>
             <p class="body">{c.body}</p>
           </li>
@@ -150,24 +144,6 @@
   .ts {
     font-size: 0.62rem;
     color: var(--text-faint);
-  }
-  .del {
-    margin-left: auto;
-    width: 18px;
-    height: 18px;
-    border-radius: 5px;
-    background: transparent;
-    color: var(--text-faint);
-    font-size: 0.6rem;
-    line-height: 1;
-    opacity: 0;
-  }
-  .comment:hover .del {
-    opacity: 1;
-  }
-  .del:hover {
-    color: var(--danger);
-    background: var(--surface);
   }
   .body {
     margin: 0.25rem 0 0;

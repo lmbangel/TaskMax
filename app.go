@@ -206,14 +206,10 @@ func (a *App) GetComments(taskID uint) ([]models.Comment, error) {
 	return a.tasks.CommentsForTask(taskID)
 }
 
-// AddComment appends a user-written comment to a task.
+// AddComment appends a user-written comment to a task. Comments are
+// immutable once written — the trail only grows; it goes away with its task.
 func (a *App) AddComment(taskID uint, body string) (models.Comment, error) {
 	return a.tasks.AddComment(taskID, body, "", "")
-}
-
-// DeleteComment removes a single comment from a task's trail.
-func (a *App) DeleteComment(id uint) error {
-	return a.tasks.DeleteComment(id)
 }
 
 // ----- Pomodoro -----

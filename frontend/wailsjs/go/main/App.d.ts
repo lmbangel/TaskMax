@@ -13,8 +13,6 @@ export function CheckForUpdate():Promise<main.UpdateInfo>;
 
 export function CreateTask(arg1:models.Task):Promise<models.Task>;
 
-export function DeleteComment(arg1:number):Promise<void>;
-
 export function DeleteTask(arg1:number):Promise<void>;
 
 export function ExportData():Promise<string>;

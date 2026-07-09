@@ -181,13 +181,8 @@ func (s *TaskService) CommentsForTask(taskID uint) ([]models.Comment, error) {
 	return comments, err
 }
 
-// DeleteComment removes a single comment.
-func (s *TaskService) DeleteComment(id uint) error {
-	if id == 0 {
-		return errors.New("comment id is required for delete")
-	}
-	return s.db.Delete(&models.Comment{}, id).Error
-}
+// Comments are deliberately immutable: no update or delete. The trail is the
+// task's audit log — it only disappears together with the task itself.
 
 // Reorder persists a new ordering given a slice of task IDs in display order.
 func (s *TaskService) Reorder(orderedIDs []uint) error {
