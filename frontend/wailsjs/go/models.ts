@@ -133,6 +133,7 @@ export namespace main {
 	    current_version: string;
 	    latest_version: string;
 	    url: string;
+	    can_self_update: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new UpdateInfo(source);
@@ -144,6 +145,7 @@ export namespace main {
 	        this.current_version = source["current_version"];
 	        this.latest_version = source["latest_version"];
 	        this.url = source["url"];
+	        this.can_self_update = source["can_self_update"];
 	    }
 	}
 
@@ -283,6 +285,22 @@ export namespace services {
 	        this.date = source["date"];
 	        this.count = source["count"];
 	        this.minutes = source["minutes"];
+	    }
+	}
+	export class ImportResult {
+	    canceled: boolean;
+	    tasks_imported: number;
+	    sessions_imported: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ImportResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.canceled = source["canceled"];
+	        this.tasks_imported = source["tasks_imported"];
+	        this.sessions_imported = source["sessions_imported"];
 	    }
 	}
 	export class PomodoroStats {

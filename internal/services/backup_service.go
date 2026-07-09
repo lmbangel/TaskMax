@@ -143,11 +143,16 @@ func (s *BackupService) importMerge(payload ExportPayload) (ImportResult, error)
 func (s *BackupService) importReplace(payload ExportPayload) (ImportResult, error) {
 	res := ImportResult{}
 	err := s.db.Transaction(func(tx *gorm.DB) error {
-		wipe := tx.Session(&gorm.Session{AllowGlobalUpdate: true}).Unscoped()
-		if err := wipe.Delete(&models.PomodoroSession{}).Error; err != nil {
+		// One fresh statement per delete — a chained *gorm.DB must not be
+		// reused after a finisher, or the second delete inherits the
+		// first's clauses and silently skips the tasks table.
+		wipe := func() *gorm.DB {
+			return tx.Session(&gorm.Session{AllowGlobalUpdate: true}).Unscoped()
+		}
+		if err := wipe().Delete(&models.PomodoroSession{}).Error; err != nil {
 			return err
 		}
-		if err := wipe.Delete(&models.Task{}).Error; err != nil {
+		if err := wipe().Delete(&models.Task{}).Error; err != nil {
 			return err
 		}
 		for i := range payload.Tasks {

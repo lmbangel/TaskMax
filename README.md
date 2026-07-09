@@ -179,8 +179,10 @@ Use the **Test connection** button in Settings to validate a DSN before saving. 
 - [x] Single-instance guard — launching the app again just brings the existing widget back
 - [x] Remember the window position between restarts
 - [x] Auto-set a task to "in progress" when you start focusing on it
+- [x] Data export / import — back up, merge, or restore the whole board from ⚙ Settings → Data
+- [x] In-place updates — "Update now" downloads and installs the new version, no manual reinstall
 <!--- [ ] Tray icon that matches the chosen accent-->
-- [ ] winget distribution and data export/backup
+- [ ] winget distribution
 
 ---
 
