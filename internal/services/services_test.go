@@ -26,7 +26,7 @@ func newTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("get sql.DB: %v", err)
 	}
 	sqlDB.SetMaxOpenConns(1)
-	if err := db.AutoMigrate(&models.Task{}, &models.PomodoroSession{}); err != nil {
+	if err := db.AutoMigrate(&models.Task{}, &models.PomodoroSession{}, &models.Comment{}); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
 	return db

@@ -199,6 +199,23 @@ func (a *App) ReorderTasks(orderedIDs []uint) error {
 	return a.tasks.Reorder(orderedIDs)
 }
 
+// ----- Comments -----
+
+// GetComments returns a task's comment trail, oldest first.
+func (a *App) GetComments(taskID uint) ([]models.Comment, error) {
+	return a.tasks.CommentsForTask(taskID)
+}
+
+// AddComment appends a user-written comment to a task.
+func (a *App) AddComment(taskID uint, body string) (models.Comment, error) {
+	return a.tasks.AddComment(taskID, body, "", "")
+}
+
+// DeleteComment removes a single comment from a task's trail.
+func (a *App) DeleteComment(id uint) error {
+	return a.tasks.DeleteComment(id)
+}
+
 // ----- Pomodoro -----
 
 // StartPomodoro starts or resumes a countdown for a task. Focusing on a

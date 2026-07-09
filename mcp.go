@@ -47,6 +47,14 @@ func (a *App) tasksChanged() {
 	}
 }
 
+// commentsChanged tells the UI an agent commented on a task, so an open
+// detail view can refresh its trail live.
+func (a *App) commentsChanged(taskID uint) {
+	if a.ctx != nil {
+		wailsruntime.EventsEmit(a.ctx, "comments:changed", taskID)
+	}
+}
+
 func jsonResult(v interface{}) (*mcp.CallToolResult, error) {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
@@ -227,6 +235,48 @@ func (a *App) registerMCPTools(s *server.MCPServer) {
 		}
 		a.tasksChanged()
 		return mcp.NewToolResultText(fmt.Sprintf("task %d deleted", id)), nil
+	})
+
+	// ----- add_comment -----
+	s.AddTool(mcp.NewTool("add_comment",
+		mcp.WithDescription("Add a comment to a task's trail. Use this to leave context and traceability as you work: what was done, decisions made, links to PRs/commits. Comments are timestamped and marked as agent-written."),
+		mcp.WithNumber("task_id", mcp.Required(), mcp.Description("Task ID")),
+		mcp.WithString("body", mcp.Required(), mcp.Description("The comment text")),
+		mcp.WithString("author", mcp.Description("Display name shown on the comment, e.g. \"Claude Code\"")),
+	), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		taskID, err := req.RequireInt("task_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		body, err := req.RequireString("body")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		comment, err := a.tasks.AddComment(uint(taskID), body, "agent", req.GetString("author", ""))
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		a.commentsChanged(uint(taskID))
+		return jsonResult(comment)
+	})
+
+	// ----- get_comments -----
+	s.AddTool(mcp.NewTool("get_comments",
+		mcp.WithDescription("Read a task's comment trail, oldest first. Check this for context left by the user or other agent sessions before working on a task."),
+		mcp.WithNumber("task_id", mcp.Required(), mcp.Description("Task ID")),
+	), func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		taskID, err := req.RequireInt("task_id")
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		if _, errRes := a.taskByID(taskID); errRes != nil {
+			return errRes, nil
+		}
+		comments, err := a.tasks.CommentsForTask(uint(taskID))
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		return jsonResult(comments)
 	})
 
 	// ----- start_pomodoro -----

@@ -34,5 +34,5 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 
 // Migrate runs auto-migration for all application models.
 func Migrate(gdb *gorm.DB) error {
-	return gdb.AutoMigrate(&models.Task{}, &models.PomodoroSession{})
+	return gdb.AutoMigrate(&models.Task{}, &models.PomodoroSession{}, &models.Comment{})
 }

@@ -9,6 +9,7 @@
   import PomodoroTimer from './lib/PomodoroTimer.svelte'
   import Settings from './lib/Settings.svelte'
   import StatsPanel from './lib/StatsPanel.svelte'
+  import Comments from './lib/Comments.svelte'
   import {
     GetConfig,
     SaveConfig,
@@ -384,6 +385,7 @@
             <button class="btn btn-ghost" on:click={editTask}>✎ Edit</button>
             <button class="btn btn-ghost danger" on:click={deleteSelected}>🗑</button>
           </div>
+          <Comments taskId={selectedTask.ID} />
         </div>
       {/if}
 

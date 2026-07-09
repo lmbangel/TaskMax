@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -131,7 +132,7 @@ func (s *TaskService) SetInProgressIfTodo(id uint) error {
 		Update("status", "in_progress").Error
 }
 
-// Delete removes a task and its associated pomodoro sessions.
+// Delete removes a task and its associated pomodoro sessions and comments.
 func (s *TaskService) Delete(id uint) error {
 	if id == 0 {
 		return errors.New("task id is required for delete")
@@ -140,8 +141,52 @@ func (s *TaskService) Delete(id uint) error {
 		if err := tx.Where("task_id = ?", id).Delete(&models.PomodoroSession{}).Error; err != nil {
 			return err
 		}
+		if err := tx.Where("task_id = ?", id).Delete(&models.Comment{}).Error; err != nil {
+			return err
+		}
 		return tx.Delete(&models.Task{}, id).Error
 	})
+}
+
+// ----- Comments -----
+
+// AddComment appends a comment to a task's trail. Source follows the task
+// convention: "" for the UI, "agent" for MCP writes.
+func (s *TaskService) AddComment(taskID uint, body, source, author string) (models.Comment, error) {
+	if taskID == 0 {
+		return models.Comment{}, errors.New("task id is required for a comment")
+	}
+	if body == "" {
+		return models.Comment{}, errors.New("comment body is required")
+	}
+	var exists int64
+	s.db.Model(&models.Task{}).Where("id = ?", taskID).Count(&exists)
+	if exists == 0 {
+		return models.Comment{}, fmt.Errorf("task %d not found", taskID)
+	}
+	comment := models.Comment{TaskID: taskID, Body: body, Source: source, Author: author}
+	if err := s.db.Create(&comment).Error; err != nil {
+		return models.Comment{}, err
+	}
+	return comment, nil
+}
+
+// CommentsForTask returns a task's comments oldest-first, so the trail reads
+// chronologically.
+func (s *TaskService) CommentsForTask(taskID uint) ([]models.Comment, error) {
+	var comments []models.Comment
+	err := s.db.Where("task_id = ?", taskID).
+		Order("created_at asc").Order("id asc").
+		Find(&comments).Error
+	return comments, err
+}
+
+// DeleteComment removes a single comment.
+func (s *TaskService) DeleteComment(id uint) error {
+	if id == 0 {
+		return errors.New("comment id is required for delete")
+	}
+	return s.db.Delete(&models.Comment{}, id).Error
 }
 
 // Reorder persists a new ordering given a slice of task IDs in display order.

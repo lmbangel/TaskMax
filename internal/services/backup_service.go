@@ -15,7 +15,7 @@ import (
 // changes in a way older builds cannot read.
 const (
 	exportFormat  = "taskmax-export"
-	exportVersion = 1
+	exportVersion = 2 // v2 added task comments; v1 files import without them
 )
 
 // Import modes.
@@ -32,6 +32,7 @@ type ExportPayload struct {
 	AppVersion string                   `json:"app_version"`
 	Tasks      []models.Task            `json:"tasks"`
 	Sessions   []models.PomodoroSession `json:"sessions"`
+	Comments   []models.Comment         `json:"comments,omitempty"`
 }
 
 // ImportResult reports what an import actually did.
@@ -39,6 +40,7 @@ type ImportResult struct {
 	Canceled         bool `json:"canceled"`
 	TasksImported    int  `json:"tasks_imported"`
 	SessionsImported int  `json:"sessions_imported"`
+	CommentsImported int  `json:"comments_imported"`
 }
 
 // BackupService serialises the whole board (tasks + pomodoro history) to JSON
@@ -63,6 +65,10 @@ func (s *BackupService) Export(appVersion string) ([]byte, error) {
 	if err := s.db.Order("started_at asc").Find(&sessions).Error; err != nil {
 		return nil, err
 	}
+	var comments []models.Comment
+	if err := s.db.Order("created_at asc").Find(&comments).Error; err != nil {
+		return nil, err
+	}
 	payload := ExportPayload{
 		Format:     exportFormat,
 		Version:    exportVersion,
@@ -70,6 +76,7 @@ func (s *BackupService) Export(appVersion string) ([]byte, error) {
 		AppVersion: appVersion,
 		Tasks:      tasks,
 		Sessions:   sessions,
+		Comments:   comments,
 	}
 	return json.MarshalIndent(payload, "", "  ")
 }
@@ -132,6 +139,19 @@ func (s *BackupService) importMerge(payload ExportPayload) (ImportResult, error)
 			}
 			res.SessionsImported++
 		}
+		for i := range payload.Comments {
+			c := payload.Comments[i]
+			newID, ok := idMap[c.TaskID]
+			if !ok {
+				continue // orphan comment: without its task there is no trail to attach to
+			}
+			c.ID = 0
+			c.TaskID = newID
+			if err := tx.Create(&c).Error; err != nil {
+				return err
+			}
+			res.CommentsImported++
+		}
 		return nil
 	})
 	if err != nil {
@@ -152,6 +172,9 @@ func (s *BackupService) importReplace(payload ExportPayload) (ImportResult, erro
 		if err := wipe().Delete(&models.PomodoroSession{}).Error; err != nil {
 			return err
 		}
+		if err := wipe().Delete(&models.Comment{}).Error; err != nil {
+			return err
+		}
 		if err := wipe().Delete(&models.Task{}).Error; err != nil {
 			return err
 		}
@@ -166,6 +189,12 @@ func (s *BackupService) importReplace(payload ExportPayload) (ImportResult, erro
 				return err
 			}
 			res.SessionsImported++
+		}
+		for i := range payload.Comments {
+			if err := tx.Create(&payload.Comments[i]).Error; err != nil {
+				return err
+			}
+			res.CommentsImported++
 		}
 		return nil
 	})

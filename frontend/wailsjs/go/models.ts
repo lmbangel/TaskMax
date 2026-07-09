@@ -153,6 +153,53 @@ export namespace main {
 
 export namespace models {
 	
+	export class Comment {
+	    ID: number;
+	    // Go type: time
+	    CreatedAt: any;
+	    // Go type: time
+	    UpdatedAt: any;
+	    // Go type: gorm
+	    DeletedAt: any;
+	    task_id: number;
+	    body: string;
+	    source: string;
+	    author: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Comment(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
+	        this.CreatedAt = this.convertValues(source["CreatedAt"], null);
+	        this.UpdatedAt = this.convertValues(source["UpdatedAt"], null);
+	        this.DeletedAt = this.convertValues(source["DeletedAt"], null);
+	        this.task_id = source["task_id"];
+	        this.body = source["body"];
+	        this.source = source["source"];
+	        this.author = source["author"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class PomodoroSession {
 	    ID: number;
 	    // Go type: time
@@ -291,6 +338,7 @@ export namespace services {
 	    canceled: boolean;
 	    tasks_imported: number;
 	    sessions_imported: number;
+	    comments_imported: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new ImportResult(source);
@@ -301,6 +349,7 @@ export namespace services {
 	        this.canceled = source["canceled"];
 	        this.tasks_imported = source["tasks_imported"];
 	        this.sessions_imported = source["sessions_imported"];
+	        this.comments_imported = source["comments_imported"];
 	    }
 	}
 	export class PomodoroStats {
