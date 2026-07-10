@@ -3,6 +3,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"log"
 	"os"
@@ -11,6 +12,12 @@ import (
 	"github.com/go-toast/toast"
 	"golang.org/x/sys/windows/registry"
 )
+
+// Toasts scale the image down from 512px, which stays sharp — the .ico used
+// for the tray renders blurry here because Windows upscales a small frame.
+//
+//go:embed build/appicon.png
+var toastIcon []byte
 
 // toastIconPath is where the app icon was materialised on disk for toasts;
 // set by setupToastApp during startup.
@@ -41,12 +48,14 @@ func pushAgentToast(title, body string, taskID uint) {
 // with no attribution. The embedded icon is written into the data directory
 // so the registry has a stable file path to point at.
 func setupToastApp(dataDir string) {
-	iconPath := filepath.Join(dataDir, "taskmax.ico")
-	if err := os.WriteFile(iconPath, trayIcon, 0o644); err != nil {
+	iconPath := filepath.Join(dataDir, "taskmax.png")
+	if err := os.WriteFile(iconPath, toastIcon, 0o644); err != nil {
 		log.Printf("toast icon write failed: %v", err)
 	} else {
 		toastIconPath = iconPath
 	}
+	// Remove the low-res .ico an earlier build materialised.
+	_ = os.Remove(filepath.Join(dataDir, "taskmax.ico"))
 
 	k, _, err := registry.CreateKey(registry.CURRENT_USER, `Software\Classes\AppUserModelId\TaskMax`, registry.ALL_ACCESS)
 	if err != nil {
