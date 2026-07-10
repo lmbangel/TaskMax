@@ -24,9 +24,10 @@ type PomodoroConfig struct {
 
 // AppConfig holds general application preferences.
 type AppConfig struct {
-	Theme          string `mapstructure:"theme" json:"theme"`   // surface mode: cosy | dark | light
-	Accent         string `mapstructure:"accent" json:"accent"` // accent/mascot: duck | tomato | orange
-	MinimizeToTray bool   `mapstructure:"minimize_to_tray" json:"minimize_to_tray"`
+	Theme              string `mapstructure:"theme" json:"theme"`   // surface mode: cosy | dark | light
+	Accent             string `mapstructure:"accent" json:"accent"` // accent/mascot: duck | tomato | orange
+	MinimizeToTray     bool   `mapstructure:"minimize_to_tray" json:"minimize_to_tray"`
+	AgentNotifications bool   `mapstructure:"agent_notifications" json:"agent_notifications"` // toast when agents create/complete tasks
 }
 
 // MCPConfig controls the embedded MCP server that lets coding agents
@@ -69,6 +70,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("app.theme", "cosy")
 	v.SetDefault("app.accent", "duck")
 	v.SetDefault("app.minimize_to_tray", true)
+	v.SetDefault("app.agent_notifications", true)
 
 	v.SetDefault("window.x", 0)
 	v.SetDefault("window.y", 0)
@@ -126,6 +128,7 @@ func Save(path string, cfg *Config) error {
 	v.Set("app.theme", cfg.App.Theme)
 	v.Set("app.accent", cfg.App.Accent)
 	v.Set("app.minimize_to_tray", cfg.App.MinimizeToTray)
+	v.Set("app.agent_notifications", cfg.App.AgentNotifications)
 
 	v.Set("window.x", cfg.Window.X)
 	v.Set("window.y", cfg.Window.Y)

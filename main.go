@@ -86,6 +86,9 @@ func main() {
 	}
 
 	app := NewApp(cfg, cfgPath, database)
+	// Launched by a notification click while not running: remember the task
+	// so the frontend can navigate to it as soon as it mounts.
+	app.pendingNav = taskIDFromArgs(os.Args[1:])
 
 	// Compact "desk widget" window: frameless, always on top, calculator-sized.
 	// It is positioned at the bottom-right of the screen on startup (see

@@ -43,8 +43,13 @@ func (a *App) showWindow() {
 
 // onSecondInstanceLaunch runs in the surviving instance when someone starts
 // the app a second time: instead of a duplicate widget, the existing one
-// comes back into view.
-func (a *App) onSecondInstanceLaunch(_ options.SecondInstanceData) {
+// comes back into view. A taskmax://task/<id> argument — how notification
+// clicks arrive — additionally navigates to that task.
+func (a *App) onSecondInstanceLaunch(data options.SecondInstanceData) {
+	if id := taskIDFromArgs(data.Args); id != 0 {
+		a.navigateToTask(id)
+		return
+	}
 	a.showWindow()
 }
 

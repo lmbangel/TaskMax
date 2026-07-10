@@ -107,6 +107,7 @@ func (a *App) registerMCPTools(s *server.MCPServer) {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 		a.tasksChanged()
+		a.notifyAgentActivity("🤖 New task from your agent", created.Title, created.ID)
 		return jsonResult(created)
 	})
 
@@ -161,6 +162,7 @@ func (a *App) registerMCPTools(s *server.MCPServer) {
 		if errRes != nil {
 			return errRes, nil
 		}
+		prevStatus := task.Status
 		args := req.GetArguments()
 		if v, ok := args["title"].(string); ok && v != "" {
 			task.Title = v
@@ -191,11 +193,15 @@ func (a *App) registerMCPTools(s *server.MCPServer) {
 				task.DueDate = &t
 			}
 		}
+		nowDone := task.Status == "done" && prevStatus != "done"
 		updated, err := a.tasks.Update(task)
 		if err != nil {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 		a.tasksChanged()
+		if nowDone {
+			a.notifyTaskCompleted(updated.Title, updated.ID)
+		}
 		return jsonResult(updated)
 	})
 
@@ -212,12 +218,16 @@ func (a *App) registerMCPTools(s *server.MCPServer) {
 		if errRes != nil {
 			return errRes, nil
 		}
+		alreadyDone := task.Status == "done"
 		task.Status = "done"
 		updated, err := a.tasks.Update(task)
 		if err != nil {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 		a.tasksChanged()
+		if !alreadyDone {
+			a.notifyTaskCompleted(task.Title, task.ID)
+		}
 		return jsonResult(updated)
 	})
 

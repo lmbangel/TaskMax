@@ -29,6 +29,8 @@ export function GetDailyActivity(arg1:number):Promise<Array<services.DailyActivi
 
 export function GetLaunchOnStartup():Promise<boolean>;
 
+export function GetPendingNavigation():Promise<number>;
+
 export function GetSessionsForTask(arg1:number):Promise<Array<models.PomodoroSession>>;
 
 export function GetTasksByStatus(arg1:string):Promise<Array<models.Task>>;

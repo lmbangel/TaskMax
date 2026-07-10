@@ -17,6 +17,7 @@
     GetSessionsForTask,
     CheckForUpdate,
     ApplyUpdate,
+    GetPendingNavigation,
     HideToTray
   } from '../wailsjs/go/main/App'
   import {
@@ -190,6 +191,17 @@
     tab = 'tasks'
   }
 
+  // openTask jumps to a task's detail card — used by notification clicks.
+  async function openTask(id) {
+    await tasks.refresh()
+    tab = 'tasks'
+    filter = 'all'
+    search = ''
+    tagFilter = null
+    selectedId = id
+    loadSessions()
+  }
+
   // ----- Update check -----
   let update = null // UpdateInfo from Go when a newer release exists
   let updating = null // { phase, percent } while ApplyUpdate runs
@@ -260,6 +272,18 @@
       updating = p
     })
 
+    // A notification click navigates to the task it announced.
+    EventsOn('task:navigate', (id) => {
+      openTask(id)
+    })
+    try {
+      // Cold start from a notification: the task id rides in on launch args.
+      const pending = await GetPendingNavigation()
+      if (pending) openTask(pending)
+    } catch (e) {
+      /* older backend without navigation support */
+    }
+
     statsInterval = setInterval(loadStats, 30000)
 
     checkForUpdate()
@@ -270,6 +294,7 @@
     EventsOff('pomodoro:complete')
     EventsOff('tasks:changed')
     EventsOff('update:progress')
+    EventsOff('task:navigate')
     if (statsInterval) clearInterval(statsInterval)
     if (updateInterval) clearInterval(updateInterval)
     timer.stop()

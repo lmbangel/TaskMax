@@ -268,6 +268,10 @@
           <input type="checkbox" bind:checked={draft.mcp.enabled} />
           <span>Let coding agents manage tasks (MCP server)</span>
         </label>
+        <label class="switch">
+          <input type="checkbox" bind:checked={draft.app.agent_notifications} />
+          <span>Notify when agents create or complete tasks</span>
+        </label>
         <p class="note">
           Serves MCP on http://localhost:{draft.mcp.port}/mcp — local connections only.
           Connect Claude Code with:<br />

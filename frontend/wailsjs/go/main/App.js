@@ -50,6 +50,10 @@ export function GetLaunchOnStartup() {
   return window['go']['main']['App']['GetLaunchOnStartup']();
 }
 
+export function GetPendingNavigation() {
+  return window['go']['main']['App']['GetPendingNavigation']();
+}
+
 export function GetSessionsForTask(arg1) {
   return window['go']['main']['App']['GetSessionsForTask'](arg1);
 }

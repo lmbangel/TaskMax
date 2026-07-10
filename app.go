@@ -38,6 +38,7 @@ type App struct {
 	hidden bool // window hidden to the tray (tracked for the global hotkey)
 
 	lastDueNotify string // local date ("2006-01-02") of the last due-task reminder
+	pendingNav    uint   // task to open on launch (cold start from a notification click)
 }
 
 // NewApp wires up the services around an open database connection.
@@ -62,6 +63,7 @@ func (a *App) startup(ctx context.Context) {
 	a.startMCP()
 	go a.dueReminderLoop()
 	go cleanupUpdateArtifacts()
+	go registerURLProtocol()
 }
 
 // parseDueDate accepts a YYYY-MM-DD date for task due dates.

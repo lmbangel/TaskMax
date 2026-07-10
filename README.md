@@ -53,6 +53,7 @@ A classic Pomodoro cycle: 25-minute work sessions, short breaks, and a long brea
 
 - Tasks carry a **title, description, priority, due date, tags, and a repeat rule** (daily / weekly / monthly — completing a recurring task brings it back with the next due date).
 - Every task has a **comment trail** for context and traceability: you comment from the task card, agents comment over MCP (marked 🤖, with an optional author name like "Claude Code") — so a task records *who did what, when* as it moves across the board.
+- **Desktop notifications for agent activity**: when an agent creates or completes a task, you get a toast — completion toasts preview the agent's latest comment, and clicking one (Windows) brings the widget up right on that task. Mute it under ⚙ Settings → Agents.
 - **Due dates are live**: tasks due today are highlighted, overdue ones flagged in red, and TaskMax sends a daily reminder notification when something is due.
 - Click a task's checkbox to cycle its status: **todo → in progress → done**. Filter by status with the All / Todo / Doing / Done tabs, **search** by text, or click any **#tag** to filter by it.
 - **Drag to reorder** the list; the order is saved.

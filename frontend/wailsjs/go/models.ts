@@ -4,6 +4,7 @@ export namespace config {
 	    theme: string;
 	    accent: string;
 	    minimize_to_tray: boolean;
+	    agent_notifications: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppConfig(source);
@@ -14,6 +15,7 @@ export namespace config {
 	        this.theme = source["theme"];
 	        this.accent = source["accent"];
 	        this.minimize_to_tray = source["minimize_to_tray"];
+	        this.agent_notifications = source["agent_notifications"];
 	    }
 	}
 	export class MCPConfig {
