@@ -6,10 +6,15 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/go-toast/toast"
 	"golang.org/x/sys/windows/registry"
 )
+
+// toastIconPath is where the app icon was materialised on disk for toasts;
+// set by setupToastApp during startup.
+var toastIconPath string
 
 // pushAgentToast shows a Windows toast whose click opens taskmax://task/<id>.
 // Failures are logged and swallowed — a lost notification must never break
@@ -20,6 +25,7 @@ func pushAgentToast(title, body string, taskID uint) {
 			AppID:               "TaskMax",
 			Title:               title,
 			Message:             body,
+			Icon:                toastIconPath,
 			ActivationArguments: fmt.Sprintf("%s%d", taskURLPrefix, taskID),
 			// ActivationType defaults to "protocol", which is what routes the
 			// click through the taskmax:// handler registered at startup.
@@ -28,6 +34,30 @@ func pushAgentToast(title, body string, taskID uint) {
 			log.Printf("toast failed: %v", err)
 		}
 	}()
+}
+
+// setupToastApp registers "TaskMax" as an AppUserModelID so toasts carry the
+// app's name and icon in their header — without this, Windows renders them
+// with no attribution. The embedded icon is written into the data directory
+// so the registry has a stable file path to point at.
+func setupToastApp(dataDir string) {
+	iconPath := filepath.Join(dataDir, "taskmax.ico")
+	if err := os.WriteFile(iconPath, trayIcon, 0o644); err != nil {
+		log.Printf("toast icon write failed: %v", err)
+	} else {
+		toastIconPath = iconPath
+	}
+
+	k, _, err := registry.CreateKey(registry.CURRENT_USER, `Software\Classes\AppUserModelId\TaskMax`, registry.ALL_ACCESS)
+	if err != nil {
+		log.Printf("toast app registration failed: %v", err)
+		return
+	}
+	defer k.Close()
+	_ = k.SetStringValue("DisplayName", "TaskMax")
+	if toastIconPath != "" {
+		_ = k.SetStringValue("IconUri", toastIconPath)
+	}
 }
 
 // registerURLProtocol claims the taskmax:// scheme for this executable in

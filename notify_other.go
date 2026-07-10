@@ -14,3 +14,7 @@ func pushAgentToast(title, body string, _ uint) {
 
 // registerURLProtocol is Windows-only; toast clicks elsewhere don't navigate.
 func registerURLProtocol() {}
+
+// setupToastApp is Windows-only; other platforms attribute notifications
+// through their own mechanisms.
+func setupToastApp(string) {}

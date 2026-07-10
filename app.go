@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -63,7 +64,10 @@ func (a *App) startup(ctx context.Context) {
 	a.startMCP()
 	go a.dueReminderLoop()
 	go cleanupUpdateArtifacts()
-	go registerURLProtocol()
+	go func() {
+		registerURLProtocol()
+		setupToastApp(filepath.Dir(a.cfgPath))
+	}()
 }
 
 // parseDueDate accepts a YYYY-MM-DD date for task due dates.
